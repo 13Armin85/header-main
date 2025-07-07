@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>داشبورد</title>
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.13.2/themes/smoothness/jquery-ui.css">
+
+  </head>
+  <body>
+    <header class="header">
+      <div class="right-section">
+        <img src="images/Servia-Logo 1.svg" alt="لوگو" />
+        <nav class="menu">
+          <div class="menu-item-wrapper" id="all-menu-wrapper">
+            <div class="menu-item" onclick="toggleSidebar()">
+              <span>همه</span>
+            </div>
+            <div class="sidebar-dropdown" id="sidebarDropdown">
+              <div class="dropdown-search">
+                <i class="fa-solid fa-filter search-icon"></i>
+                <input
+                  type="text"
+                  placeholder="فیلتر"
+                  id="sidebar-search-input"
+                />
+                <i class="fa-solid fa-circle-xmark clear-icon"></i>
+                <i
+                  class="fas fa-thumbtack dropdown-pin-icon"
+                  style="position: absolute; right: 88%"
+                ></i>
+              </div>
+
+              <div class="accordion-group">
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                  امکانات عمومی
+                </div>
+                <div class="accordion-body">
+                  <a href="#/dashboard-customer">داشبورد مشتریان و فرایندی</a>
+                  <a href="#/general-management">قابلیت‌های مدیریت عمومی</a>
+                  <a href="#/server-management">قابلیت‌های مدیریت سرور</a>
+                  <a href="#/support-customization"
+                    >پشتیبانی و اختصاصی‌سازی</a
+                  >
+                </div>
+              </div>
+
+              <div class="accordion-group">
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                  قابلیت‌های مدیریت عمومی
+                </div>
+                <div class="accordion-body">
+                  <a href="#/user-management">مدیریت کاربران، سطوح و ...</a>
+                  <a href="#/service-management">قابلیت‌های مدیریت سرویس</a>
+                  <a href="#/category-management">قابلیت‌های مدیریت دسته</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="menu-item-wrapper" id="favorites-menu-wrapper">
+            <div class="menu-item" onclick="toggleFavoritesMenu()">
+              موردعلاقه‌ها
+            </div>
+
+            <div class="favorites-dropdown" id="favoritesDropdown">
+              <div class="favorites-dropdown-search">
+                <i class="fa-solid fa-filter search-icon"></i>
+                <input
+                  type="text"
+                  placeholder="فیلتر"
+                  id="favorites-search-input"
+                />
+                <i class="fa-solid fa-circle-xmark clear-icon"></i>
+                <i class="fas fa-thumbtack dropdown-pin-icon"></i>
+              </div>
+              <div class="favorites-dropdown-content" id="favorites-content">
+                <div class="empty-state-container">
+                  <img src="images/no-data-sm 1.svg" alt="یافت نشد" />
+                  <p class="empty-favorites-message">
+                    هیچ موردی در علاقه‌مندی‌ها وجود ندارد.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="menu-item-wrapper" id="history-menu-wrapper">
+            <div class="menu-item" onclick="toggleHistory()">تاریخچه</div>
+
+            <div class="history-dropdown" id="historyDropdown">
+              <div class="history-dropdown-search">
+                <i class="fa-solid fa-filter search-icon"></i>
+                <input
+                  type="text"
+                  placeholder="فیلتر"
+                  id="history-search-input"
+                />
+                <i class="fa-solid fa-circle-xmark clear-icon"></i>
+                <i class="fas fa-thumbtack dropdown-pin-icon"></i>
+              </div>
+              <div class="history-dropdown-content" id="history-content">
+                <div class="empty-state-container">
+                  <img src="images/no-data-sm 1.svg" alt="یافت نشد" />
+                  <p class="empty-history-message">تاریخچه‌ای وجود ندارد.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </nav>
+      </div>
+
+      <div class="menu-item active" id="active-item-container">
+        <span id="active-item-text">کارتابل کارشناسان</span>
+        <i id="active-item-star" class="far fa-star"></i>
+      </div>
+
+      <div class="left-section">
+        <div class="search-box-wrapper">
+          <div class="search-box">
+            <i class="fas fa-search header-search-icon"></i>
+            <input type="text" class="search-input" placeholder="جستجو" />
+            <i class="fa-solid fa-circle-xmark clear-icon"></i>
+            <div class="search-category-button" onclick="toggleSearchOptions()">
+              <i class="fas fa-chevron-down"></i>
+            </div>
+          </div>
+          <div class="search-options-dropdown" id="searchOptionsDropdown">
+            <a href="#">قابلیت های مدیریت سرویس</a>
+            <a href="#">داشبورد مدیریتی و فرایندی</a>
+            <a href="#">پیکربندی و اختصاصی سازی</a>
+          </div>
+        </div>
+
+        <div class="icon"><i class="far fa-question-circle"></i></div>
+
+        <div class="icon-wrapper" id="notification-wrapper">
+          <div class="icon" onclick="toggleNotifications()">
+            <i class="far fa-bell"></i>
+          </div>
+          <div class="notification-dropdown" id="notificationDropdown">
+            <div class="dropdown-pointer"></div>
+            <div class="notification-dropdown-header">
+              <span>اعلان‌ها</span>
+              <a href="#">علامت‌گذاری همه به عنوان خوانده شده</a>
+            </div>
+            <div class="notification-tabs">
+              <button class="active">همه</button>
+              <button>خوانده‌نشده</button>
+            </div>
+            <div class="notification-dropdown-content">
+              <div class="notification-item unread">
+                <i class="fas fa-check-circle icon-success"></i>
+                <div class="notification-text">
+                  <p>درخواست شماره ۱۲۴ با موفقیت انجام شد.</p>
+                  <small>۲ دقیقه پیش</small>
+                </div>
+              </div>
+              <div class="notification-item">
+                <i class="fas fa-exclamation-triangle icon-warning"></i>
+                <div class="notification-text">
+                  <p>سرور شماره ۳ نیاز به بررسی فوری دارد.</p>
+                  <small>۱ ساعت پیش</small>
+                </div>
+              </div>
+            </div>
+            <div class="notification-dropdown-footer">
+              <a href="#">مشاهده همه اعلان‌ها</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="avatar">
+          <img
+            src="https://randomuser.me/api/portraits/women/70.jpg"
+            alt="آواتار"
+          />
+        </div>
+
+        <div class="profile-dropdown" id="profileDropdown">
+          <div class="dropdown-pointer1"></div>
+          <div class="profile-dropdown-header">
+            <img
+              src="https://randomuser.me/api/portraits/women/70.jpg"
+              alt="عکس پروفایل کاربر"
+            />
+            <div class="profile-user-info">
+              <p class="user-name">اسم و فامیل کاربر</p>
+              <p class="user-title">عنوان کاربر</p>
+            </div>
+          </div>
+          <nav class="profile-dropdown-nav">
+            <a href="#">
+              <i class="fas fa-user-circle"></i>
+              <span>حساب کاربری</span>
+            </a>
+            <a href="#">
+              <i class="fas fa-cog"></i>
+              <span>شخصی سازی</span>
+            </a>
+            <a href="#" class="logout">
+              <i class="fas fa-sign-out-alt"></i>
+              <span>خروج</span>
+            </a>
+          </nav>
+        </div>
+      </div>
+    </header>
+     <script src="./jquery-3.7.1.min.js"></script>
+
+    <script src="./jquery-ui-1.14.1.min.js"></script>
+
+    <script src="script.js"></script>
+  </body>
+</html>
