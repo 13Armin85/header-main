@@ -9,7 +9,6 @@ $(document).ready(function() {
     function closeAllNonPinnedDropdowns(excludeId = null, animationDuration = 100) {
         $(".sidebar-dropdown, .history-dropdown, .favorites-dropdown, .notification-dropdown, .profile-dropdown, .search-options-dropdown").each(function() {
             const $dropdown = $(this);
-            // فقط دراپ‌داون‌هایی که show هستند، ID آن‌ها excludeId نیست و پین نشده‌اند را می‌بندد.
             if ($dropdown.hasClass("show") && $dropdown.attr("id") !== excludeId && !$dropdown.hasClass("pinned")) {
                 $dropdown.hide("blind", { direction: "vertical" }, animationDuration, function() {
                     $(this).removeClass("show");
@@ -273,7 +272,7 @@ $(document).ready(function() {
             const $header = $(this);
             const $body = $header.next(".accordion-body");
             $header.toggleClass("active");
-            $body.toggle("blind", { direction: "vertical" }, 300, function() {
+            $body.toggle("blind", { direction: "vertical" }, 100, function() {
                 $(this).toggleClass("open", $(this).is(":visible"));
             });
         });
@@ -330,10 +329,9 @@ $(document).ready(function() {
 
     initializeApp();
 
-    const ANIMATION_DURATION = 300;
+    const ANIMATION_DURATION = 100;
 
     function toggleDropdown($dropdown, $wrapper = null) {
-        // اگر دراپ‌داون پین شده باشد و تلاش برای بستن آن از طریق wrapper باشد، از عملیات خارج می‌شود.
         if ($wrapper && $dropdown.hasClass("pinned")) return;
 
         const isCurrentlyOpen = $dropdown.hasClass("show");
@@ -342,7 +340,6 @@ $(document).ready(function() {
         closeAllNonPinnedDropdowns(excludeId, ANIMATION_DURATION);
 
         if (isCurrentlyOpen) {
-            // اگر دراپ‌داون باز است و پین نشده، آن را می‌بندد.
             if (!$dropdown.hasClass("pinned")) {
                 $dropdown.stop(true, true).hide("blind", { direction: "vertical" }, ANIMATION_DURATION, function() {
                     $(this).removeClass("show");
@@ -350,7 +347,6 @@ $(document).ready(function() {
                 });
             }
         } else {
-            // اگر دراپ‌داون بسته است، آن را باز می‌کند.
             $dropdown.stop(true, true).show("blind", { direction: "vertical" }, ANIMATION_DURATION, function() {
                 $(this).addClass("show");
                 if ($wrapper) $wrapper.addClass("wrapper--active");
@@ -387,9 +383,8 @@ $(document).ready(function() {
     const $allDropdowns = $(".sidebar-dropdown, .history-dropdown, .favorites-dropdown");
 
     function unpinAllMenus() {
-        // تمام منوها را از حالت پین خارج می‌کند و کلاس مربوطه را حذف می‌کند.
+
         $allDropdowns.removeClass("pinned");
-        // به این قسمت نیازی نیست که منوها را پنهان کنیم، چون این کار را به عهده toggleDropdown یا closeAllNonPinnedDropdowns می‌گذاریم.
         $pinIcons.removeClass("pinned-active");
         $("body").removeClass("body-pinned");
     }
@@ -402,22 +397,16 @@ $(document).ready(function() {
         const isCurrentlyPinned = $dropdown.hasClass("pinned");
 
         if (isCurrentlyPinned) {
-            // اگر پین شده است و می‌خواهیم از پین خارج کنیم:
+
             $dropdown.removeClass("pinned");
             $(this).removeClass("pinned-active");
             $("body").removeClass("body-pinned");
-
-            // بعد از unpin شدن، آن را مانند یک دراپ‌داون معمولی در نظر می‌گیریم.
-            // این بدان معناست که اگر خارج از آن کلیک شود، بسته خواهد شد.
-            // نیازی به بستن فوری آن در اینجا نیست، چون ممکن است کاربر بخواهد آن را باز نگه دارد.
         } else {
-            // اگر پین نشده است و می‌خواهیم پین کنیم:
-            unpinAllMenus(); // ابتدا تمام منوهای دیگر را از پین خارج می‌کنیم
+            unpinAllMenus(); 
             $dropdown.addClass("pinned");
             $(this).addClass("pinned-active");
             $("body").addClass("body-pinned");
 
-            // مطمئن می‌شویم که منوی تازه پین شده باز است.
             if (!$dropdown.hasClass("show")) {
                 $dropdown.stop(true, true).show("blind", { direction: "vertical" }, ANIMATION_DURATION, function() {
                     $(this).addClass("show");
@@ -432,8 +421,6 @@ $(document).ready(function() {
         const $importantElements = $clickTarget.closest(
             ".menu-item-wrapper, .search-box-wrapper, .icon-wrapper, .avatar, .dropdown-pin-icon, .sidebar-dropdown, .history-dropdown, .favorites-dropdown, .notification-dropdown, .profile-dropdown, .search-options-dropdown"
         );
-
-        // اگر خارج از هر یک از عناصر مهم کلیک شد، منوهای غیر پین‌شده را می‌بندیم.
         if (!$importantElements.length) {
             closeAllNonPinnedDropdowns();
         }
@@ -441,7 +428,7 @@ $(document).ready(function() {
 
 
     $('#all-menu-wrapper').on('click', function(e) {
-        if ($(e.target).closest('#sidebarDropdown').length && !$("#sidebarDropdown").hasClass("pinned")) return; // اگر داخل منوی باز کلیک شد و پین نبود، کاری نکن
+        if ($(e.target).closest('#sidebarDropdown').length && !$("#sidebarDropdown").hasClass("pinned")) return; 
         toggleSidebar();
     });
     $('#favorites-menu-wrapper').on('click', function(e) {

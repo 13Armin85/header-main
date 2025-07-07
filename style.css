@@ -26,12 +26,10 @@ body {
   background-color: #1c1d22;
   height: 50px;
   z-index: 1000;
-  
-  /* -- ویژگی‌های کلیدی برای موقعیت‌یابی -- */
   position: fixed;
   top: 0;
   left: 0;
-  right: 0; /* در حالت عادی، تمام عرض صفحه است */
+  right: 0; 
   width: auto;
   
 }
@@ -212,7 +210,9 @@ body {
   padding: 6px 10px;
   width: 80%;
 }
-
+::placeholder{
+  font-family: "iransans" , sans-serif;
+}
 .dropdown-search i {
   color: #ffffff;
 }
@@ -232,12 +232,12 @@ body {
 }
 
 .accordion-group {
-  padding-top: 8px;
-  margin-top: 8px;
+  padding-top: 14px !important;
+  margin-top: -14px !important ;
 }
 
 .accordion-header {
-  font-weight: bold;
+  font-weight: 100;
   font-size: 14px;
   cursor: pointer;
   padding: 8px 4px;
@@ -261,7 +261,7 @@ body {
 .accordion-header.active::before {
   transform: rotate(90deg);
   position: absolute;
-  left: 267px;
+  left: 286px;
 }
 
 .accordion-body {
@@ -594,7 +594,7 @@ box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
 }
 
 .profile-user-info .user-name {
-  font-weight: 600;
+  font-weight: 100;
   font-size: 16px;
   color: white;
   margin: 0;
@@ -1132,7 +1132,7 @@ box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
 }
 
 .accordion-header {
-  font-weight: bold;
+  font-weight: 100;
   font-size: 14px;
   cursor: pointer;
   padding: 8px 4px;
@@ -1153,11 +1153,6 @@ box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
   transition: transform 0.2s;
 }
 
-.accordion-header.active::before {
-  transform: rotate(90deg);
-  position: absolute;
-  left: 267px;
-}
 
 .accordion-body {
   display: none;
@@ -1466,13 +1461,6 @@ box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
   border-radius: 50%;
 }
 
-.profile-user-info .user-name {
-  font-weight: 600;
-  font-size: 16px;
-  color: white;
-  margin: 0;
-}
-
 .profile-user-info .user-title {
   font-size: 13px;
   color: #c6c7c9;
@@ -1563,6 +1551,7 @@ box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
 
 .sidebar-item-wrapper a {
   flex-grow: 1;
+  color: rgb(173, 173, 173);
 }
 
 .favorite-star {
@@ -1940,12 +1929,14 @@ box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
   left: -14px;
   box-shadow: 5px 0 0 0 rgba(43,45,72,0.92);
   border-bottom-right-radius: 15px;
+  height: 13px;
 }
 
 .menu-item-wrapper.wrapper--active::after {
   right: 6px;
   box-shadow: -5px 0 0 0 rgba(43,45,72,0.92);
   border-bottom-left-radius: 15px;
+  height: 13px;
 }
 
 
