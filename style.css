@@ -18,7 +18,6 @@ body {
 }
 
 .header {
-  /* -- ویژگی‌های اصلی هدر -- */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1047,6 +1046,7 @@ box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
 
 .search-options-dropdown a:hover {
   background-color: rgba(150, 150, 218, 0.274);
+  border: 1px solid #5865A5;
 }
 
 .left-section .icon {
