@@ -1,7 +1,8 @@
 $(document).ready(function() {
     // --- بخش متغیرهای اصلی ---
-    const favoriteItems = new Set();
-    let historyItems = [];
+    const initialFavorites = JSON.parse(localStorage.getItem('favoriteItems')) || [];
+    const favoriteItems = new Set(initialFavorites);
+    let historyItems = JSON.parse(localStorage.getItem('historyItems')) || [];
     let mainSearchHistory = JSON.parse(localStorage.getItem('mainSearchHistory')) || [];
 
     const $activeItemContainer = $("#active-item-container");
@@ -30,8 +31,6 @@ $(document).ready(function() {
             </div>
         `;
     }
-
-    // --- بخش جستجوی اصلی (بالا سمت چپ) ---
 
     function updateMainSearchHistory(term) {
         if (!term) return;
@@ -75,93 +74,35 @@ $(document).ready(function() {
         }
     }
 
-    // --- رویدادهای مربوط به جستجوی اصلی ---
-
-    $mainSearchInput.on('focus', function() {
-        closeAllNonPinnedDropdowns('mainSearchDropdown');
-        const term = $(this).val().trim();
-        if (!term) {
-            displayMainSearchHistory();
-        } else {
-            executeMainSearch(term);
-        }
-    });
-
-    $mainSearchInput.on('keydown', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            const term = $(this).val().trim();
-            if (term) executeMainSearch(term);
-        }
-    });
-    
-  $mainSearchDropdown.on('click', function(e) {
-    const $target = $(e.target);
-    
-    // جلوگیری از بسته‌شدن منو در کلیک روی داخل منو
-    e.stopPropagation(); 
-
-    if ($target.hasClass('view-results-button')) {
-        const results = $target.data('results');
-        $mainSearchDropdown.empty();
-        $mainSearchDropdown.append('<div class="search-results-header">نتایج جستجو</div>');
-        $.each(results, function(index, result) {
-            const $resultLink = $("<a>").attr("href", result.href).addClass('result-item').text(result.text);
-            $mainSearchDropdown.append($resultLink);
-        });
-    } 
-    else if ($target.hasClass('remove-history-icon')) {
-        const termToRemove = $target.data('term');
-        mainSearchHistory = mainSearchHistory.filter(item => item !== termToRemove);
-        localStorage.setItem('mainSearchHistory', JSON.stringify(mainSearchHistory));
-        displayMainSearchHistory();
-    } 
-    else if ($target.hasClass('history-search-item')) {
-        const term = $target.clone().children().remove().end().text();
-        $mainSearchInput.val(term).focus();
-        executeMainSearch(term);
-    } 
-    else if ($target.hasClass('result-item')) {
-        e.preventDefault();
-        setActiveItem($target.text(), $target.attr('href'));
-        addToHistory($target.text(), $target.attr('href'));
-        closeAllNonPinnedDropdowns();
-    }
-});
-    // --- سایر توابع برنامه ---
-
     function addToHistory(text, href) {
         historyItems = historyItems.filter(item => item.href !== href);
         historyItems.unshift({ text, href });
         if (historyItems.length > 10) historyItems.pop();
+        localStorage.setItem('historyItems', JSON.stringify(historyItems));
         updateHistoryDropdown();
     }
 
     function updateHistoryDropdown() {
-    const $historyContent = $("#history-content");
-    const searchTerm = $("#history-search-input").val().trim().toLowerCase();
-    $historyContent.empty();
-
-    const filteredItems = historyItems.filter(item =>
-        item.text.toLowerCase().includes(searchTerm)
-    );
-
-    if (historyItems.length === 0) {
-        $historyContent.html(createEmptyStateHTML("تاریخچه‌ای وجود ندارد."));
-    } else if (filteredItems.length === 0) {
-        $historyContent.html(createEmptyStateHTML("نتیجه‌ای یافت نشد."));
-    } else {
-        $.each(filteredItems, function(index, item) {
-            const $link = $("<a>").attr("href", item.href).addClass("history-item").text(item.text);
-            $link.on("click", function(e) {
-                e.preventDefault();
-                setActiveItem(item.text, item.href);
-                closeAllNonPinnedDropdowns();
+        const $historyContent = $("#history-content");
+        const searchTerm = $("#history-search-input").val().trim().toLowerCase();
+        $historyContent.empty();
+        const filteredItems = historyItems.filter(item => item.text.toLowerCase().includes(searchTerm));
+        if (historyItems.length === 0) {
+            $historyContent.html(createEmptyStateHTML("تاریخچه‌ای وجود ندارد."));
+        } else if (filteredItems.length === 0) {
+            $historyContent.html(createEmptyStateHTML("نتیجه‌ای یافت نشد."));
+        } else {
+            $.each(filteredItems, function(index, item) {
+                const $link = $("<a>").attr("href", item.href).addClass("history-item").text(item.text);
+                $link.on("click", function(e) {
+                    e.preventDefault();
+                    setActiveItem(item.text, item.href);
+                    closeAllNonPinnedDropdowns();
+                });
+                $historyContent.append($link);
             });
-            $historyContent.append($link);
-        });
+        }
     }
-}
 
     function setActiveItem(text, href) {
         $activeItemText.text(text);
@@ -177,11 +118,8 @@ $(document).ready(function() {
         } else {
             favoriteItems.add(itemString);
         }
-        updateAllViews(text, href);
-    }
-
-    function updateAllViews(text, href) {
-        const itemString = JSON.stringify([text, href]);
+        localStorage.setItem('favoriteItems', JSON.stringify(Array.from(favoriteItems)));
+        
         const isFavorited = favoriteItems.has(itemString);
         $(".sidebar-item-wrapper").each(function() {
             const $link = $(this).find("a");
@@ -195,38 +133,36 @@ $(document).ready(function() {
         updateFavoritesDropdown();
     }
 
-   function updateFavoritesDropdown() {
-    const $favoritesContent = $("#favorites-content");
-    const searchTerm = $("#favorites-search-input").val().trim().toLowerCase();
-    $favoritesContent.empty();
-
-    const filteredItems = Array.from(favoriteItems).filter(itemString =>
-        JSON.parse(itemString)[0].toLowerCase().includes(searchTerm)
-    );
-
-    if (favoriteItems.size === 0) {
-        $favoritesContent.html(createEmptyStateHTML("هیچ موردی در علاقه‌مندی‌ها وجود ندارد."));
-    } else if (filteredItems.length === 0) {
-        $favoritesContent.html(createEmptyStateHTML("نتیجه‌ای یافت نشد."));
-    } else {
-        $.each(filteredItems, function(index, itemString) {
-            const [text, href] = JSON.parse(itemString);
-            const $itemDiv = $("<div>").addClass("favorite-item");
-            const $link = $("<a>").attr("href", href).text(text).on("click", function(e) {
-                e.preventDefault();
-                setActiveItem(text, href);
-                addToHistory(text, href);
-                closeAllNonPinnedDropdowns();
+    function updateFavoritesDropdown() {
+        const $favoritesContent = $("#favorites-content");
+        const searchTerm = $("#favorites-search-input").val().trim().toLowerCase();
+        $favoritesContent.empty();
+        if (favoriteItems.size === 0) {
+            $favoritesContent.html(createEmptyStateHTML("هیچ موردی در علاقه‌مندی‌ها وجود ندارد."));
+            return;
+        }
+        const filteredItems = Array.from(favoriteItems).filter(itemString => JSON.parse(itemString)[0].toLowerCase().includes(searchTerm));
+        if (filteredItems.length === 0) {
+            $favoritesContent.html(createEmptyStateHTML("نتیجه‌ای یافت نشد."));
+        } else {
+            $.each(filteredItems, function(index, itemString) {
+                const [text, href] = JSON.parse(itemString);
+                const $itemDiv = $("<div>").addClass("favorite-item");
+                const $link = $("<a>").attr("href", href).text(text).on("click", function(e) {
+                    e.preventDefault();
+                    setActiveItem(text, href);
+                    addToHistory(text, href);
+                    closeAllNonPinnedDropdowns();
+                });
+                const $removeIcon = $("<i>").addClass("fas fa-times remove-favorite-icon").on("click", (e) => {
+                    e.stopPropagation();
+                    toggleFavorite(text, href);
+                });
+                $itemDiv.append($link, $removeIcon);
+                $favoritesContent.append($itemDiv);
             });
-            const $removeIcon = $("<i>").addClass("fas fa-times remove-favorite-icon").on("click", (e) => {
-                e.stopPropagation();
-                toggleFavorite(text, href);
-            });
-            $itemDiv.append($link, $removeIcon);
-            $favoritesContent.append($itemDiv);
-        });
+        }
     }
-}
 
     function filterSidebar(searchTerm) {
         $(".sidebar-dropdown .accordion-group").each(function() {
@@ -259,7 +195,6 @@ $(document).ready(function() {
         const $input = $searchContainer.find("input");
         const $clearIcon = $searchContainer.find(".clear-icon");
         if (!$input.length || !$clearIcon.length) return;
-
         $input.on("input", () => $clearIcon.toggle(!!$input.val()));
         $clearIcon.on("mousedown", (e) => {
             e.preventDefault();
@@ -300,18 +235,19 @@ $(document).ready(function() {
         $("#favorites-search-input").on("input", updateFavoritesDropdown);
         $("#history-search-input").on("input", updateHistoryDropdown);
 
+        // Load initial states
         updateFavoritesDropdown();
         updateHistoryDropdown();
         initializeSearchOptions(); 
+        
+        // Setup clear icons for all search boxes
         setupClearIcon(".search-box-wrapper");
-                setupClearIcon("#sidebarDropdown");
+        setupClearIcon("#sidebarDropdown");
         setupClearIcon("#favoritesDropdown");
         setupClearIcon("#historyDropdown");
     }
 
     initializeApp();
-
-    // --- بخش مدیریت باز و بسته شدن منوها ---
 
     function toggleDropdown($dropdown, $wrapper = null) {
         if ($wrapper && $dropdown.hasClass("pinned")) return;
@@ -323,13 +259,80 @@ $(document).ready(function() {
         }
     }
 
+    // --- بخش مدیریت رویدادها ---
+    
+    $mainSearchInput.on('focus', function() {
+        closeAllNonPinnedDropdowns('mainSearchDropdown');
+        const term = $(this).val().trim();
+        if (!term) {
+            displayMainSearchHistory();
+        } else {
+            executeMainSearch(term);
+        }
+    });
+
+    $mainSearchInput.on('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const term = $(this).val().trim();
+            if (term) executeMainSearch(term);
+        }
+    });
+    
+    $mainSearchInput.on('blur', function() {
+        setTimeout(function() {
+            if (!$mainSearchDropdown.is(':hover')) {
+                $mainSearchDropdown.hide("blind", { direction: "vertical" }, 100).removeClass("show");
+            }
+        }, 150);
+    });
+
+    $mainSearchDropdown.on('click', function(e) {
+        const $target = $(e.target);
+        if ($target.hasClass('view-results-button')) {
+            const results = $target.data('results');
+            $mainSearchDropdown.empty();
+            $mainSearchDropdown.append('<div class="search-results-header">نتایج جستجو</div>');
+            $.each(results, function(index, result) {
+                const $resultLink = $("<a>").attr("href", result.href).addClass('result-item').text(result.text);
+                $mainSearchDropdown.append($resultLink);
+            });
+        } else if ($target.hasClass('remove-history-icon')) {
+            const termToRemove = $target.data('term');
+            mainSearchHistory = mainSearchHistory.filter(item => item !== termToRemove);
+            localStorage.setItem('mainSearchHistory', JSON.stringify(mainSearchHistory));
+            displayMainSearchHistory();
+        } else if ($target.hasClass('history-search-item')) {
+            const term = $target.clone().children().remove().end().text();
+            $mainSearchInput.val(term).focus();
+            executeMainSearch(term);
+        } else if ($target.hasClass('result-item')) {
+            e.preventDefault();
+            setActiveItem($target.text(), $target.attr('href'));
+            addToHistory($target.text(), $target.attr('href'));
+            closeAllNonPinnedDropdowns();
+        }
+    });
+
     $('#all-menu-wrapper').on('click', (e) => { if (!$(e.target).closest('#sidebarDropdown').length) toggleDropdown($("#sidebarDropdown"), $("#all-menu-wrapper")); });
-    $('#favorites-menu-wrapper').on('click', (e) => { if (!$(e.target).closest('#favoritesDropdown').length) toggleDropdown($("#favoritesDropdown"), $("#favorites-menu-wrapper")); });
-    $('#history-menu-wrapper').on('click', (e) => { if (!$(e.target).closest('#historyDropdown').length) toggleDropdown($("#historyDropdown"), $("#history-menu-wrapper")); });
+    
+    $('#favorites-menu-wrapper').on('click', (e) => { 
+        if (!$(e.target).closest('#favoritesDropdown').length) {
+            updateFavoritesDropdown();
+            toggleDropdown($("#favoritesDropdown"), $("#favorites-menu-wrapper")); 
+        }
+    });
+    
+    $('#history-menu-wrapper').on('click', (e) => { 
+        if (!$(e.target).closest('#historyDropdown').length) {
+            updateHistoryDropdown();
+            toggleDropdown($("#historyDropdown"), $("#history-menu-wrapper")); 
+        }
+    });
+    
     $('.search-category-button').on('click', (e) => { e.stopPropagation(); toggleDropdown($("#searchOptionsDropdown")); });
     $('#notification-wrapper .icon').on('click', (e) => { e.stopPropagation(); toggleDropdown($("#notificationDropdown")); });
     $('.avatar').on('click', (e) => { e.stopPropagation(); toggleDropdown($("#profileDropdown")); });
-
 
     $(".dropdown-pin-icon").on("click", function(event) {
         event.stopPropagation();
