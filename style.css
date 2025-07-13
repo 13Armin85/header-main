@@ -1684,6 +1684,10 @@ box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
   color: #fff;
   transform: rotate(45deg) scale(1.1);
 }
+#sidebarDropdown {
+    max-height: 450px;
+    overflow-y: auto;
+}
 
 .pinned {
   position: fixed !important;
@@ -2002,10 +2006,12 @@ body.body-pinned::before {
     text-decoration: none;
     font-size: 14px;
     transition: background-color 0.2s;
+    border-radius: 8px;
 }
 
 .main-search-dropdown a:hover {
     color: rgb(85, 85, 85);
+    background-color: #ECEBF7;
 }
 
 .main-search-dropdown a .remove-history-icon {

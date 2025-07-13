@@ -138,13 +138,20 @@ $(document).ready(function() {
     }
 
     function updateHistoryDropdown() {
-        const $historyContent = $("#history-content");
-        $historyContent.empty();
-        if (historyItems.length === 0) {
-            $historyContent.html(createEmptyStateHTML("تاریخچه‌ای وجود ندارد."));
-            return;
-        }
-        $.each(historyItems, function(index, item) {
+    const $historyContent = $("#history-content");
+    const searchTerm = $("#history-search-input").val().trim().toLowerCase();
+    $historyContent.empty();
+
+    const filteredItems = historyItems.filter(item =>
+        item.text.toLowerCase().includes(searchTerm)
+    );
+
+    if (historyItems.length === 0) {
+        $historyContent.html(createEmptyStateHTML("تاریخچه‌ای وجود ندارد."));
+    } else if (filteredItems.length === 0) {
+        $historyContent.html(createEmptyStateHTML("نتیجه‌ای یافت نشد."));
+    } else {
+        $.each(filteredItems, function(index, item) {
             const $link = $("<a>").attr("href", item.href).addClass("history-item").text(item.text);
             $link.on("click", function(e) {
                 e.preventDefault();
@@ -154,6 +161,7 @@ $(document).ready(function() {
             $historyContent.append($link);
         });
     }
+}
 
     function setActiveItem(text, href) {
         $activeItemText.text(text);
@@ -187,14 +195,21 @@ $(document).ready(function() {
         updateFavoritesDropdown();
     }
 
-    function updateFavoritesDropdown() {
-        const $favoritesContent = $("#favorites-content");
-        $favoritesContent.empty();
-        if (favoriteItems.size === 0) {
-            $favoritesContent.html(createEmptyStateHTML("هیچ موردی در علاقه‌مندی‌ها وجود ندارد."));
-            return;
-        }
-        favoriteItems.forEach(itemString => {
+   function updateFavoritesDropdown() {
+    const $favoritesContent = $("#favorites-content");
+    const searchTerm = $("#favorites-search-input").val().trim().toLowerCase();
+    $favoritesContent.empty();
+
+    const filteredItems = Array.from(favoriteItems).filter(itemString =>
+        JSON.parse(itemString)[0].toLowerCase().includes(searchTerm)
+    );
+
+    if (favoriteItems.size === 0) {
+        $favoritesContent.html(createEmptyStateHTML("هیچ موردی در علاقه‌مندی‌ها وجود ندارد."));
+    } else if (filteredItems.length === 0) {
+        $favoritesContent.html(createEmptyStateHTML("نتیجه‌ای یافت نشد."));
+    } else {
+        $.each(filteredItems, function(index, itemString) {
             const [text, href] = JSON.parse(itemString);
             const $itemDiv = $("<div>").addClass("favorite-item");
             const $link = $("<a>").attr("href", href).text(text).on("click", function(e) {
@@ -211,6 +226,7 @@ $(document).ready(function() {
             $favoritesContent.append($itemDiv);
         });
     }
+}
 
     function filterSidebar(searchTerm) {
         $(".sidebar-dropdown .accordion-group").each(function() {
@@ -288,6 +304,9 @@ $(document).ready(function() {
         updateHistoryDropdown();
         initializeSearchOptions(); 
         setupClearIcon(".search-box-wrapper");
+                setupClearIcon("#sidebarDropdown");
+        setupClearIcon("#favoritesDropdown");
+        setupClearIcon("#historyDropdown");
     }
 
     initializeApp();
