@@ -287,8 +287,10 @@ $(document).ready(function() {
         }, 150);
     });
 
-    $mainSearchDropdown.on('click', function(e) {
+   $mainSearchDropdown.on('click', function(e) {
         const $target = $(e.target);
+
+        // اگر روی دکمه "مشاهده نتیجه" کلیک شد
         if ($target.hasClass('view-results-button')) {
             const results = $target.data('results');
             $mainSearchDropdown.empty();
@@ -297,16 +299,23 @@ $(document).ready(function() {
                 const $resultLink = $("<a>").attr("href", result.href).addClass('result-item').text(result.text);
                 $mainSearchDropdown.append($resultLink);
             });
-        } else if ($target.hasClass('remove-history-icon')) {
+        } 
+
+        else if ($target.hasClass('remove-history-icon')) {
+            e.stopPropagation(); // <-- این خط اضافه شده است
             const termToRemove = $target.data('term');
             mainSearchHistory = mainSearchHistory.filter(item => item !== termToRemove);
             localStorage.setItem('mainSearchHistory', JSON.stringify(mainSearchHistory));
             displayMainSearchHistory();
-        } else if ($target.hasClass('history-search-item')) {
+        } 
+        // اگر روی یک آیتم تاریخچه کلیک شد
+        else if ($target.hasClass('history-search-item')) {
             const term = $target.clone().children().remove().end().text();
             $mainSearchInput.val(term).focus();
             executeMainSearch(term);
-        } else if ($target.hasClass('result-item')) {
+        } 
+        // اگر روی یکی از نتایج نهایی کلیک شد
+        else if ($target.hasClass('result-item')) {
             e.preventDefault();
             setActiveItem($target.text(), $target.attr('href'));
             addToHistory($target.text(), $target.attr('href'));
