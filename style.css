@@ -169,6 +169,7 @@ body {
   font-size: 20px;
   color: #aaa;
   transition: color 0.2s;
+  margin-bottom: -10px;
 }
 
 .left-section .icon:hover {
@@ -322,7 +323,7 @@ box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
 .dropdown-pointer {
   position: absolute;
   top: -10px;
-  right: 74%;
+  right: 72%;
   left: 50%;
   transform: translateX(-50%);
   width: 0;
@@ -1190,19 +1191,6 @@ box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
   transform: translateY(0);
 }
 
-.dropdown-pointer {
-  position: absolute;
-  top: -10px;
-  right: 74%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 0;
-  height: 0;
-  border-left: 10px solid transparent;
-  border-right: 10px solid transparent;
-  border-bottom: 10px solid #2b2d34;
-}
-
 .history-dropdown-search {
   position: relative;
   padding: 12px 16px;
@@ -1220,7 +1208,7 @@ box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
   width: 90%;
   background-color: #525267;
   border: 1px solid #6e6f80;
-  border-radius: 4px;
+  border-radius: 8px;
   color: #fff;
   padding: 8px 35px 8px 10px;
   outline: none;
@@ -1421,8 +1409,8 @@ box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
 }
 
 .avatar img {
-  width: 40px;
-  height: 40px;
+  width: 35px;
+  height: 35px;
   border-radius: 50%;
   cursor: pointer;
   border: 2px solid transparent;
@@ -1470,8 +1458,8 @@ box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
 }
 .profile-dropdown .dropdown-pointer1 {
   position: absolute;
-  top: -10px;
-  left: 33px;
+  top: -8px;
+  left: 30px;
   transform: translateX(-50%);
   width: 0;
   height: 0;
