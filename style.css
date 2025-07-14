@@ -96,7 +96,7 @@ body {
 
 .search-box:focus-within {
   box-shadow: 0 0 0 2px rgba(109, 220, 69, 0.2);
-  width: 300px;
+  width: 350px;
      transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s, width 0.35s ease-out;
 }
 
@@ -386,7 +386,7 @@ box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
   right: -288px;
   transform: translateX(-50%);
   width: 380px;
-  background-color: #2b2d34;
+  background-color: rgba(43,45,72,0.92);
   border: 1px solid #3d3f45;
   border-radius: 8px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
@@ -404,7 +404,7 @@ box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
   right: 230px;
 }
 .notification-dropdown .dropdown-pointer {
-  border-bottom-color: #464851;
+  border-bottom-color: rgb(58 59 74);
 }
 
 .notification-dropdown-header {
@@ -518,6 +518,7 @@ box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
   color: #000000;
 }
 
+
 .search-box:focus-within .search-input::placeholder {
   color: #ffffff;
 }
@@ -567,7 +568,7 @@ box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
   position: absolute;
   left: 0;
   width: 280px;
-  background-color: #424560;
+  background-color: rgba(43,45,72,0.92);
   border-radius: 8px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15) !;
   z-index: 1001;
@@ -1243,7 +1244,7 @@ box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
   right: -290px;
   transform: translateX(-50%);
   width: 380px;
-  background-color: #3c3f53f0;
+  background-color: rgba(43,45,72,0.92);
   border: 1px solid #3d3f45;
   border-radius: 8px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
@@ -1423,7 +1424,7 @@ box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
   position: absolute;
   left: 0;
   width: 280px;
-  background-color: #424560f0;
+  background-color: rgba(43,45,72,0.92);
   border-radius: 8px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
   z-index: 1001;
@@ -1441,7 +1442,7 @@ box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
   align-items: center;
   gap: 15px;
   padding: 20px;
-  background-color: #424560;
+  background-color: rgba(43,45,72,0.92);
   border-bottom: 1px solid gray;
 }
 
@@ -1467,7 +1468,7 @@ box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
   border-right: 8px solid transparent;
   border-bottom: 8px solid;
 
-  color: #424560;
+  color: rgb(43, 45, 72);
 
   filter: drop-shadow(0px -1px 1px rgba(0, 0, 0, 0.08));
 }
