@@ -286,9 +286,15 @@ $(document).ready(function() {
             }
         }, 150);
     });
-
-   $mainSearchDropdown.on('click', function(e) {
+    
+    // START: *** این بخش برای حل مشکل اصلاح شد ***
+    $mainSearchDropdown.on('mousedown', function(e) { // تغییر از 'click' به 'mousedown'
         const $target = $(e.target);
+
+        // اگر روی دکمه "مشاهده نتایج" یا "حذف تاریخچه" کلیک شد، از blur شدن اینپوت جلوگیری کن
+        if ($target.hasClass('view-results-button') || $target.hasClass('remove-history-icon')) {
+            e.preventDefault(); 
+        }
 
         if ($target.hasClass('view-results-button')) {
             const results = $target.data('results');
@@ -299,7 +305,6 @@ $(document).ready(function() {
                 $mainSearchDropdown.append($resultLink);
             });
         } 
-
         else if ($target.hasClass('remove-history-icon')) {
             e.stopPropagation(); 
             const termToRemove = $target.data('term');
@@ -307,7 +312,6 @@ $(document).ready(function() {
             localStorage.setItem('mainSearchHistory', JSON.stringify(mainSearchHistory));
             displayMainSearchHistory();
         } 
-
         else if ($target.hasClass('history-search-item')) {
             const term = $target.clone().children().remove().end().text();
             $mainSearchInput.val(term).focus();
@@ -320,6 +324,7 @@ $(document).ready(function() {
             closeAllNonPinnedDropdowns();
         }
     });
+    // END: *** پایان بخش اصلاح شده ***
 
     $('#all-menu-wrapper').on('click', (e) => { if (!$(e.target).closest('#sidebarDropdown').length) toggleDropdown($("#sidebarDropdown"), $("#all-menu-wrapper")); });
     
