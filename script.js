@@ -32,47 +32,58 @@ $(document).ready(function() {
         `;
     }
 
-    function updateMainSearchHistory(term) {
-        if (!term) return;
-        mainSearchHistory = mainSearchHistory.filter(item => item !== term);
-        mainSearchHistory.unshift(term);
-        if (mainSearchHistory.length > 5) mainSearchHistory.pop();
-        localStorage.setItem('mainSearchHistory', JSON.stringify(mainSearchHistory));
-    }
+   function updateMainSearchHistory(term, category) {
+    if (!term || !category) return;
+    // تبدیل تاریخچه به آبجکت‌هایی شامل عبارت و دسته‌بندی
+    mainSearchHistory = mainSearchHistory.filter(item => item.term !== term); // جلوگیری از تکرار عبارت
+    mainSearchHistory.unshift({ term: term, category: category }); // افزودن آبجکت جدید
+    if (mainSearchHistory.length > 5) mainSearchHistory.pop();
+    localStorage.setItem('mainSearchHistory', JSON.stringify(mainSearchHistory));
+}
 
     function displayMainSearchHistory() {
-        $mainSearchDropdown.empty().show("blind", { direction: "vertical" }, 100).addClass('show');
-        if (mainSearchHistory.length > 0) {
-            $mainSearchDropdown.append('<div class="search-history-header">جستجوهای اخیر</div>');
-            $.each(mainSearchHistory, function(index, term) {
-                const $historyLink = $("<a>").attr("href", "#").addClass('history-search-item').text(term);
-                const $removeIcon = $("<i>").addClass("fas fa-times remove-history-icon").data('term', term);
-                $historyLink.append($removeIcon);
-                $mainSearchDropdown.append($historyLink);
-            });
-        } else {
-            $mainSearchDropdown.append(createEmptyStateHTML("تاریخچه جستجو خالی است."));
-        }
-    }
+    $mainSearchDropdown.empty().show("blind", { direction: "vertical" }, 100).addClass('show');
+    if (mainSearchHistory.length > 0) {
+        $mainSearchDropdown.append('<div class="search-history-header">جستجوهای اخیر</div>');
+        $.each(mainSearchHistory, function(index, item) {
+            // افزودن دسته‌بندی به عنوان title attribute برای تولتیپ
+            const $historyLink = $("<a>").attr("href", "#")
+                                        .addClass('history-search-item')
+                                        .text(item.term)
+                                        .attr('title', item.category); // <-- تغییر کلیدی اینجاست
 
-    function executeMainSearch(term) {
-        if (!term) return;
-        updateMainSearchHistory(term);
-        $mainSearchDropdown.empty().show().addClass('show');
-        const results = [];
-        $("#sidebarDropdown .sidebar-item-wrapper a").each(function() {
-            if ($(this).text().toLowerCase().includes(term.toLowerCase())) {
-                results.push({ text: $(this).text(), href: $(this).attr('href') });
-            }
+            const $removeIcon = $("<i>").addClass("fas fa-times remove-history-icon").data('term', item.term);
+            $historyLink.append($removeIcon);
+            $mainSearchDropdown.append($historyLink);
         });
-        if (results.length > 0) {
-            const $viewResultsBtn = $("<button>").addClass("view-results-button").text(`مشاهده نتیجه جست و جو (${results.length})`);
-            $viewResultsBtn.data('results', results);
-            $mainSearchDropdown.append($viewResultsBtn);
-        } else {
-            $mainSearchDropdown.append(createEmptyStateHTML("نتیجه‌ای یافت نشد."));
-        }
+    } else {
+        $mainSearchDropdown.append(createEmptyStateHTML("تاریخچه جستجو خالی است."));
     }
+}
+
+   function executeMainSearch(term) {
+    if (!term) return;
+    
+    // گرفتن نام دسته‌بندی انتخاب شده
+    const selectedCategory = $("#searchOptionsDropdown a.selected").text().trim();
+    updateMainSearchHistory(term, selectedCategory); // ارسال دسته‌بندی به تابع ذخیره‌سازی
+
+    $mainSearchDropdown.empty().show().addClass('show');
+    const results = [];
+    $("#sidebarDropdown .sidebar-item-wrapper a").each(function() {
+        if ($(this).text().toLowerCase().includes(term.toLowerCase())) {
+            results.push({ text: $(this).text(), href: $(this).attr('href') });
+        }
+    });
+    if (results.length > 0) {
+        const $viewResultsBtn = $("<button>").addClass("view-results-button").text(`مشاهده نتیجه جست و جو (${results.length})`);
+        $viewResultsBtn.data('results', results);
+        $mainSearchDropdown.append($viewResultsBtn);
+    } else {
+        $mainSearchDropdown.append(createEmptyStateHTML("نتیجه‌ای یافت نشد."));
+    }
+}
+
 
     function addToHistory(text, href) {
         historyItems = historyItems.filter(item => item.href !== href);
@@ -286,45 +297,62 @@ $(document).ready(function() {
             }
         }, 150);
     });
-    
-    // START: *** این بخش برای حل مشکل اصلاح شد ***
-    $mainSearchDropdown.on('mousedown', function(e) { // تغییر از 'click' به 'mousedown'
-        const $target = $(e.target);
 
-        // اگر روی دکمه "مشاهده نتایج" یا "حذف تاریخچه" کلیک شد، از blur شدن اینپوت جلوگیری کن
-        if ($target.hasClass('view-results-button') || $target.hasClass('remove-history-icon')) {
-            e.preventDefault(); 
-        }
+   // این تابع را پیدا کرده و با نسخه جدید جایگزین کنید
 
-        if ($target.hasClass('view-results-button')) {
-            const results = $target.data('results');
-            $mainSearchDropdown.empty();
-            $mainSearchDropdown.append('<div class="search-results-header">نتایج جستجو</div>');
-            $.each(results, function(index, result) {
-                const $resultLink = $("<a>").attr("href", result.href).addClass('result-item').text(result.text);
-                $mainSearchDropdown.append($resultLink);
-            });
-        } 
-        else if ($target.hasClass('remove-history-icon')) {
-            e.stopPropagation(); 
-            const termToRemove = $target.data('term');
-            mainSearchHistory = mainSearchHistory.filter(item => item !== termToRemove);
-            localStorage.setItem('mainSearchHistory', JSON.stringify(mainSearchHistory));
-            displayMainSearchHistory();
-        } 
-        else if ($target.hasClass('history-search-item')) {
-            const term = $target.clone().children().remove().end().text();
-            $mainSearchInput.val(term).focus();
-            executeMainSearch(term);
-        } 
-        else if ($target.hasClass('result-item')) {
-            e.preventDefault();
-            setActiveItem($target.text(), $target.attr('href'));
-            addToHistory($target.text(), $target.attr('href'));
-            closeAllNonPinnedDropdowns();
+$mainSearchDropdown.on('mousedown', function(e) {
+    const $target = $(e.target);
+
+    if ($target.hasClass('view-results-button') || $target.hasClass('remove-history-icon')) {
+        e.preventDefault();
+    }
+
+    if ($target.hasClass('view-results-button')) {
+        const results = $target.data('results');
+        $mainSearchDropdown.empty();
+        $mainSearchDropdown.append('<div class="search-results-header">نتایج جستجو</div>');
+        $.each(results, function(index, result) {
+            const $resultLink = $("<a>").attr("href", result.href).addClass('result-item').text(result.text);
+            $mainSearchDropdown.append($resultLink);
+        });
+    } else if ($target.hasClass('remove-history-icon')) {
+        e.stopPropagation();
+        const termToRemove = $target.data('term');
+        mainSearchHistory = mainSearchHistory.filter(item => item.term !== termToRemove);
+        localStorage.setItem('mainSearchHistory', JSON.stringify(mainSearchHistory));
+        displayMainSearchHistory();
+    } 
+    // --- بلوک کد اصلاح شده اینجاست ---
+    else if ($target.hasClass('history-search-item')) {
+        e.preventDefault(); // جلوگیری از رفتار پیش‌فرض لینک
+
+        // پیدا کردن آبجکت کامل تاریخچه (شامل عبارت و دسته)
+        const clickedTerm = $target.clone().children().remove().end().text();
+        const historyItem = mainSearchHistory.find(item => item.term === clickedTerm);
+
+        if (historyItem) {
+            // ۱. مقداردهی اینپوت جستجو
+            $mainSearchInput.val(historyItem.term).focus();
+
+            // ۲. به‌روزرسانی دسته‌بندی در UI
+            $("#searchOptionsDropdown a").removeClass("selected");
+            $("#searchOptionsDropdown a").filter(function() {
+                return $(this).text().trim() === historyItem.category;
+            }).addClass("selected");
+
+            // ۳. اجرای مجدد جستجو (که حالا دسته‌بندی صحیح را می‌خواند)
+            // این کار آیتم را به بالای لیست تاریخچه هم منتقل می‌کند
+            executeMainSearch(historyItem.term);
         }
-    });
-    // END: *** پایان بخش اصلاح شده ***
+    } 
+    // --- پایان بلوک کد اصلاح شده ---
+    else if ($target.hasClass('result-item')) {
+        e.preventDefault();
+        setActiveItem($target.text(), $target.attr('href'));
+        addToHistory($target.text(), $target.attr('href'));
+        closeAllNonPinnedDropdowns();
+    }
+});
 
     $('#all-menu-wrapper').on('click', (e) => { if (!$(e.target).closest('#sidebarDropdown').length) toggleDropdown($("#sidebarDropdown"), $("#all-menu-wrapper")); });
     
@@ -368,4 +396,37 @@ $(document).ready(function() {
             closeAllNonPinnedDropdowns();
         }
     });
+});
+
+
+// این باید نسخه نهایی و صحیح باشد
+
+$("#mainSearchDropdown").tooltip({
+    items: ".history-search-item[title]",
+    classes: {
+        "ui-tooltip": "ui-tooltip-custom"
+    },
+    show: {
+        delay: 500,
+        duration: 200
+    },
+    hide: {
+        duration: 100
+    },
+    track: false,
+
+
+    appendTo: "#mainSearchDropdown",
+
+    position: {
+
+        my: "left+8 center",
+        at: "right center",
+        collision: "flipfit"
+    },
+
+    content: function() {
+        const category = $(this).attr('title');
+        return `<div class="tooltip-content">دسته: <strong>${category}</strong></div>`;
+    }
 });
