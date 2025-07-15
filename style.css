@@ -11,6 +11,7 @@ body {
   background: #e2e3e4;
   direction: rtl;
   color: white;
+  transition: padding-right 0.35s ease;
 }
 @font-face {
   font-family: iransans;
@@ -356,7 +357,6 @@ box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
   outline: none;
   box-sizing: border-box;
 }
-
 .history-dropdown-search input::placeholder {
   color: white;
 }
@@ -1950,14 +1950,15 @@ body.body-pinned::before {
   position: fixed; 
   top: 0;  
   bottom: 0;     
-  
-
   right: 320px;
-  
   width: 1px;
   background-color: #4a4d57; 
   z-index: 1002;   
 }
+body.body-pinned{
+  padding-right: 350px;
+}
+
 .sidebar-dropdown,
 .history-dropdown,
 .favorites-dropdown {
