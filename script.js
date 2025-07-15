@@ -399,7 +399,7 @@ $mainSearchDropdown.on('mousedown', function(e) {
 });
 
 
-// این باید نسخه نهایی و صحیح باشد
+
 
 $("#mainSearchDropdown").tooltip({
     items: ".history-search-item[title]",
@@ -407,26 +407,29 @@ $("#mainSearchDropdown").tooltip({
         "ui-tooltip": "ui-tooltip-custom"
     },
     show: {
-        delay: 500,
-        duration: 200
+        delay: 400
     },
-    hide: {
-        duration: 100
-    },
+    hide: false, 
     track: false,
 
 
-    appendTo: "#mainSearchDropdown",
-
     position: {
 
-        my: "left+8 center",
-        at: "right center",
-        collision: "flipfit"
+        my: "center top",
+        at: "center bottom+5", 
+        
+
+        using: function(position, feedback) {
+            $(this).css({
+                top: position.top, 
+                left: position.left, 
+                position: 'absolute'
+            });
+        }
     },
 
+
     content: function() {
-        const category = $(this).attr('title');
-        return `<div class="tooltip-content">دسته: <strong>${category}</strong></div>`;
+        return $(this).attr('title');
     }
 });
