@@ -369,35 +369,44 @@ $mainSearchDropdown.on('mousedown', function(e) {
     $('#notification-wrapper .icon').on('click', (e) => { e.stopPropagation(); toggleDropdown($("#notificationDropdown")); });
     $('.avatar').on('click', (e) => { e.stopPropagation(); toggleDropdown($("#profileDropdown")); });
 
-   $(".dropdown-pin-icon").on("click", function(event) {
+$(".dropdown-pin-icon").on("click", function(event) {
     event.stopPropagation();
     const $dropdown = $(this).closest(".sidebar-dropdown, .history-dropdown, .favorites-dropdown");
     if (!$dropdown.length) return;
 
     const dropdownId = $dropdown.attr("id");
     const isCurrentlyPinned = $dropdown.hasClass("pinned");
-    const $menuItemWrapper = $dropdown.closest('.menu-item-wrapper'); 
+    const $menuItemWrapper = $dropdown.closest('.menu-item-wrapper');
+
+ 
 
     if (isCurrentlyPinned) {
-
         closeAllNonPinnedDropdowns(dropdownId);
         $dropdown.removeClass("pinned");
         $(this).removeClass("pinned-active");
         $("body").removeClass("body-pinned");
         $menuItemWrapper.addClass('wrapper--active'); 
+
     } else {
 
+        const $previousPinned = $(".pinned");
+        if ($previousPinned.length) {
+            $previousPinned.hide().removeClass('show');
+
+             $previousPinned.closest('.menu-item-wrapper').removeClass('wrapper--active');
+        }
         $(".sidebar-dropdown, .history-dropdown, .favorites-dropdown").removeClass("pinned");
         $(".dropdown-pin-icon").removeClass("pinned-active");
-        $("body").removeClass("body-pinned");
         $dropdown.addClass("pinned");
         $(this).addClass("pinned-active");
         $("body").addClass("body-pinned");
         $menuItemWrapper.removeClass('wrapper--active'); 
+
         if (!$dropdown.hasClass("show")) {
             $dropdown.stop(true, true).show().addClass("show");
         }
     }
+    $('.menu-item-wrapper').not($menuItemWrapper).removeClass('wrapper--active');
 });
     $(window).on("click", (event) => {
         if (!$(event.target).closest(".menu-item-wrapper, .search-box-wrapper, .icon-wrapper, .avatar, .dropdown-pin-icon, .main-search-dropdown, .sidebar-dropdown, .history-dropdown, .favorites-dropdown, .notification-dropdown, .profile-dropdown, .search-options-dropdown").length) {
@@ -405,10 +414,6 @@ $mainSearchDropdown.on('mousedown', function(e) {
         }
     });
 });
-
-
-
-
 $("#mainSearchDropdown").tooltip({
     items: ".history-search-item[title]",
     classes: {

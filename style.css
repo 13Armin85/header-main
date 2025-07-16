@@ -33,7 +33,9 @@ body {
   width: auto;
   
 }
-
+.fa-regular, .far{
+  color: rgb(243, 243, 243) !important;
+}
 .right-section,
 .left-section {
   display: flex;
@@ -2010,6 +2012,8 @@ body.body-pinned{
     font-size: 14px;
     transition: background-color 0.2s;
     border-radius: 8px;
+      width: 100%; /* این خط را اضافه کنید */
+    box-sizing: border-box;
 }
 
 .main-search-dropdown a:hover {
@@ -2063,7 +2067,7 @@ body.body-pinned{
     border: none;
     box-shadow: 0 2px 8px rgba(0,0,0,0.3);
     z-index: 99999 !important;
-    margin-left: 370px;
+    margin-right: 50%;
     position: absolute;
     margin-bottom: 6px;
 
@@ -2071,13 +2075,9 @@ body.body-pinned{
 .ui-tooltip-custom::after {
     content: '';
     position: absolute;
-    
-
     bottom: 100%; 
     left: 50%;
-    transform: translateX(-50%);
-
-
+    transform: translateX(-50%); 
     width: 0;
     height: 0;
     border-left: 7px solid transparent;
