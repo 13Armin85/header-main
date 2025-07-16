@@ -14,18 +14,22 @@ $(document).ready(function() {
     // --- توابع اصلی برنامه ---
 
     // <--- مرحله ۱: ایجاد تابع کمکی برای کوتاه کردن متن و افزودن تولتیپ --->
-    function truncateAndTooltipify(selector) {
-        $(selector).each(function() {
-            const $link = $(this);
-            const fullText = $link.text().trim();
+   function truncateAndTooltipify(selector) {
+    $(selector).each(function() {
+        const $link = $(this);
+        // متن کامل را از خود لینک می‌خوانیم
+        const fullText = $link.text().trim();
 
-            if (fullText.length > 50) {
-                const truncatedText = fullText.substring(0, 30) + "...";
-                $link.text(truncatedText); // متن کوتاه شده را نمایش بده
-                $link.attr('title', fullText); // متن کامل را برای تولتیپ در title ذخیره کن
-            }
-        });
-    }
+        if (fullText.length > 50) {
+            const truncatedText = fullText.substring(0, 30) + "...";
+            $link.text(truncatedText);
+            // متن کامل را در یک دیتا اتریبیوت سفارشی ذخیره می‌کنیم
+            $link.attr('data-tooltip-text', fullText);
+            // ویژگی title را به طور کامل حذف می‌کنیم تا تداخلی ایجاد نکند
+            $link.removeAttr('title');
+        }
+    });
+}
 
     function closeAllNonPinnedDropdowns(excludeId = null) {
         $(".sidebar-dropdown, .history-dropdown, .favorites-dropdown, .notification-dropdown, .profile-dropdown, .search-options-dropdown, .main-search-dropdown").each(function() {
@@ -126,12 +130,20 @@ $(document).ready(function() {
         }
     }
 
-    function setActiveItem(text, href) {
-        $activeItemText.text(text);
-        $activeItemContainer.data({ text, href });
-        const isFavorited = favoriteItems.has(JSON.stringify([text, href]));
-        $activeItemStar.toggleClass("favorited fas", isFavorited).toggleClass("far", !isFavorited);
-    }
+    // این تابع را پیدا کرده و با کد زیر جایگزین کنید
+function setActiveItem(text, href) {
+    // text ورودی همیشه باید متن کامل باشد
+    const fullText = text; 
+
+    // فراخوانی تابع جدید برای نمایش متن در بیضی
+    updateActiveItemDisplay(fullText, href);
+
+    // ذخیره متن کامل و لینک در دیتا
+    $activeItemContainer.data({ text: fullText, href });
+
+    const isFavorited = favoriteItems.has(JSON.stringify([fullText, href]));
+    $activeItemStar.toggleClass("favorited fas", isFavorited).toggleClass("far", !isFavorited);
+}
 
     function toggleFavorite(text, href) {
         const itemString = JSON.stringify([text, href]);
@@ -227,6 +239,20 @@ $(document).ready(function() {
             $input.val("").trigger("input").focus();
         });
     }
+    function updateActiveItemDisplay(fullText, href) {
+    const $activeItemText = $("#active-item-text");
+    const maxLen = 25; // حداکثر طول متن در بیضی
+
+    if (fullText.length > maxLen) {
+        const truncatedText = fullText.substring(0, maxLen) + "...";
+        $activeItemText.text(truncatedText);
+        // اضافه کردن متن کامل به عنوان دیتا برای استفاده در تولتیپ
+        $activeItemText.attr('data-full-text', fullText);
+    } else {
+        $activeItemText.text(fullText);
+        $activeItemText.removeAttr('data-full-text');
+    }
+}
 
     function initializeApp() {
         $(".sidebar-dropdown .accordion-group .accordion-header").on("click", function() {
@@ -411,8 +437,10 @@ $(document).ready(function() {
     });
 });
 
-$("#mainSearchDropdown, #sidebarDropdown, #favoritesDropdown, #historyDropdown").tooltip({
-    items: "a[title]", 
+// کد قبلی را با این کد جایگزین کنید
+$("#sidebarDropdown, #favoritesDropdown, #historyDropdown").tooltip({
+    // تولتیپ فقط برای لینک‌هایی که این ویژگی را دارند فعال می‌شود
+    items: "a[data-tooltip-text]", 
     classes: {
         "ui-tooltip": "ui-tooltip-custom"
     },
@@ -421,22 +449,65 @@ $("#mainSearchDropdown, #sidebarDropdown, #favoritesDropdown, #historyDropdown")
     },
     position: {
         my: "center top",
-        at: "center bottom+5", // موقعیت برای همه یکی است
+        at: "center bottom+5",
     },
-    // این رویداد هنگام باز شدن تولتیپ اجرا می‌شود
     open: function(event, ui) {
-        // 'this' به دکمه‌ای اشاره دارد که تولتیپ را فعال کرده
         const triggerId = $(this).attr('id');
-        const menuIds = ['sidebarDropdown', 'favoritesDropdown', 'historyDropdown'];
+        
+        ui.tooltip.removeClass('tooltip--sidebar tooltip--favorites tooltip--history');
 
-        // ابتدا کلاس‌های اضافی را پاک می‌کنیم
-        ui.tooltip.removeClass('tooltip--menu');
-
-        // اگر تولتیپ متعلق به یکی از منوها بود، کلاس مخصوص را اضافه کن
-        if (menuIds.includes(triggerId)) {
-            ui.tooltip.addClass('tooltip--menu');
+        if (triggerId === 'sidebarDropdown') {
+            ui.tooltip.addClass('tooltip--sidebar');
+        } else if (triggerId === 'favoritesDropdown') {
+            ui.tooltip.addClass('tooltip--favorites');
+        } else if (triggerId === 'historyDropdown') {
+            ui.tooltip.addClass('tooltip--history');
         }
     },
+    // محتوای تولتیپ از ویژگی سفارشی ما خوانده می‌شود
+    content: function() {
+        return $(this).attr('data-tooltip-text');
+    }
+});
+// این کد را به انتهای فایل script.js اضافه کنید
+$("#active-item-text").tooltip({
+    // فقط زمانی که 'data-full-text' وجود دارد تولتیپ فعال شود
+    items: "[data-full-text]", 
+    classes: {
+        // یک کلاس جدید برای استایل‌دهی جداگانه
+        "ui-tooltip": "ui-tooltip-custom tooltip--active-item" 
+    },
+    position: {
+        my: "center top",
+        at: "center bottom+8", // دقیقا زیر و وسط با کمی فاصله
+    },
+    content: function() {
+        // خواندن متن کامل از دیتا
+        return $(this).attr('data-full-text');
+    }
+});
+// این بلوک را پیدا کرده و با کد زیر جایگزین کنید
+// این بلوک را جایگزین بلوک قبلی برای #mainSearchDropdown کنید
+$("#mainSearchDropdown").tooltip({
+    // ۱. انتخابگر صحیح: به دنبال لینک‌هایی می‌گردد که ویژگی title دارند
+    items: "a[title]",
+
+    // ۲. کلاس‌های سفارشی: برای اعمال استایل‌های شما
+    classes: {
+        "ui-tooltip": "ui-tooltip-custom tooltip-search-input"
+    },
+
+    show: {
+        delay: 400
+    },
+
+    // ۳. موقعیت‌دهی صحیح: با جابجایی به سمت راست
+    position: {
+        my: "center top",
+        at: "center+0 bottom+5" // عدد ۲۰۰ را می‌توانید تغییر دهید
+    },
+
+    // ۴. محتوای صحیح: محتوا را از ویژگی title می‌خواند
     content: function() {
         return $(this).attr('title');
     }

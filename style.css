@@ -2068,7 +2068,7 @@ body.body-pinned{
     border: none;
     box-shadow: 0 2px 8px rgba(0,0,0,0.3);
     z-index: 99999 !important;
-    margin-right: 50%;
+    margin-left: 5%;
     position: absolute;
     margin-bottom: 6px;
 
@@ -2099,6 +2099,34 @@ body.body-pinned{
         transform: translateY(0); 
     }
 }
-.ui-tooltip-custom.tooltip--menu {
-  transform: translateX(955px);
+
+/* استایل مخصوص برای تولتیپ آیتم فعال در هدر */
+.ui-tooltip-custom.tooltip--sidebar {
+  transform: translateX(-5px) !important;
+}
+
+/* انتقال برای تولتیپ منوی "علاقه‌مندی‌ها" */
+.ui-tooltip-custom.tooltip--favorites {
+  transform: translateX(10px) !important;
+}
+
+/* انتقال برای تولتیپ منوی "تاریخچه" */
+.ui-tooltip-custom.tooltip--history {
+  transform: translateX(10px) !important;
+}
+
+/* انتقال برای تولتیپ بیضی هدر */
+.ui-tooltip-custom.tooltip--active-item {
+  transform: translateX(80px) !important;
+}
+
+.ui-helper-hidden-accessible {
+  border: 0;
+  clip: rect(1px, 1px, 1px, 1px);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
 }
