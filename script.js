@@ -66,7 +66,7 @@ $(document).ready(function() {
     
     // گرفتن نام دسته‌بندی انتخاب شده
     const selectedCategory = $("#searchOptionsDropdown a.selected").text().trim();
-    updateMainSearchHistory(term, selectedCategory); // ارسال دسته‌بندی به تابع ذخیره‌سازی
+    updateMainSearchHistory(term, selectedCategory); 
 
     $mainSearchDropdown.empty().show().addClass('show');
     const results = [];
@@ -246,12 +246,11 @@ $(document).ready(function() {
         $("#favorites-search-input").on("input", updateFavoritesDropdown);
         $("#history-search-input").on("input", updateHistoryDropdown);
 
-        // Load initial states
         updateFavoritesDropdown();
         updateHistoryDropdown();
         initializeSearchOptions(); 
         
-        // Setup clear icons for all search boxes
+
         setupClearIcon(".search-box-wrapper");
         setupClearIcon("#sidebarDropdown");
         setupClearIcon("#favoritesDropdown");
@@ -261,15 +260,15 @@ $(document).ready(function() {
     initializeApp();
 
     function toggleDropdown($dropdown, $wrapper = null) {
-        if ($wrapper && $dropdown.hasClass("pinned")) return;
-        const isCurrentlyOpen = $dropdown.hasClass("show");
-        closeAllNonPinnedDropdowns($dropdown.attr("id"));
-        if (!isCurrentlyOpen) {
-            $dropdown.stop(true, true).show("blind", { direction: "vertical" }, 100).addClass("show");
-            if ($wrapper) $wrapper.addClass("wrapper--active");
-        }
+    if ($wrapper && $dropdown.hasClass("pinned")) return;
+    const isCurrentlyOpen = $dropdown.hasClass("show");
+    closeAllNonPinnedDropdowns($dropdown.attr("id"));
+    $('.menu-item-wrapper').removeClass('wrapper--active'); 
+    if (!isCurrentlyOpen) {
+        $dropdown.stop(true, true).show("blind", { direction: "vertical" }, 100).addClass("show");
+        if ($wrapper && !$dropdown.hasClass('pinned')) $wrapper.addClass("wrapper--active"); 
     }
-
+}
     // --- بخش مدیریت رویدادها ---
     
     $mainSearchInput.on('focus', function() {
@@ -298,7 +297,7 @@ $(document).ready(function() {
         }, 150);
     });
 
-   // این تابع را پیدا کرده و با نسخه جدید جایگزین کنید
+
 
 $mainSearchDropdown.on('mousedown', function(e) {
     const $target = $(e.target);
@@ -322,30 +321,26 @@ $mainSearchDropdown.on('mousedown', function(e) {
         localStorage.setItem('mainSearchHistory', JSON.stringify(mainSearchHistory));
         displayMainSearchHistory();
     } 
-    // --- بلوک کد اصلاح شده اینجاست ---
-    else if ($target.hasClass('history-search-item')) {
-        e.preventDefault(); // جلوگیری از رفتار پیش‌فرض لینک
 
-        // پیدا کردن آبجکت کامل تاریخچه (شامل عبارت و دسته)
+    else if ($target.hasClass('history-search-item')) {
+        e.preventDefault();
+
         const clickedTerm = $target.clone().children().remove().end().text();
         const historyItem = mainSearchHistory.find(item => item.term === clickedTerm);
 
         if (historyItem) {
-            // ۱. مقداردهی اینپوت جستجو
             $mainSearchInput.val(historyItem.term).focus();
 
-            // ۲. به‌روزرسانی دسته‌بندی در UI
             $("#searchOptionsDropdown a").removeClass("selected");
             $("#searchOptionsDropdown a").filter(function() {
                 return $(this).text().trim() === historyItem.category;
             }).addClass("selected");
 
-            // ۳. اجرای مجدد جستجو (که حالا دسته‌بندی صحیح را می‌خواند)
-            // این کار آیتم را به بالای لیست تاریخچه هم منتقل می‌کند
+
             executeMainSearch(historyItem.term);
         }
     } 
-    // --- پایان بلوک کد اصلاح شده ---
+
     else if ($target.hasClass('result-item')) {
         e.preventDefault();
         setActiveItem($target.text(), $target.attr('href'));
@@ -374,23 +369,36 @@ $mainSearchDropdown.on('mousedown', function(e) {
     $('#notification-wrapper .icon').on('click', (e) => { e.stopPropagation(); toggleDropdown($("#notificationDropdown")); });
     $('.avatar').on('click', (e) => { e.stopPropagation(); toggleDropdown($("#profileDropdown")); });
 
-    $(".dropdown-pin-icon").on("click", function(event) {
-        event.stopPropagation();
-        const $dropdown = $(this).closest(".sidebar-dropdown, .history-dropdown, .favorites-dropdown");
-        if (!$dropdown.length) return;
-        const isCurrentlyPinned = $dropdown.hasClass("pinned");
+   $(".dropdown-pin-icon").on("click", function(event) {
+    event.stopPropagation();
+    const $dropdown = $(this).closest(".sidebar-dropdown, .history-dropdown, .favorites-dropdown");
+    if (!$dropdown.length) return;
+
+    const dropdownId = $dropdown.attr("id");
+    const isCurrentlyPinned = $dropdown.hasClass("pinned");
+    const $menuItemWrapper = $dropdown.closest('.menu-item-wrapper'); 
+
+    if (isCurrentlyPinned) {
+
+        closeAllNonPinnedDropdowns(dropdownId);
+        $dropdown.removeClass("pinned");
+        $(this).removeClass("pinned-active");
+        $("body").removeClass("body-pinned");
+        $menuItemWrapper.addClass('wrapper--active'); 
+    } else {
+
         $(".sidebar-dropdown, .history-dropdown, .favorites-dropdown").removeClass("pinned");
         $(".dropdown-pin-icon").removeClass("pinned-active");
         $("body").removeClass("body-pinned");
-        if (!isCurrentlyPinned) {
-            $dropdown.addClass("pinned");
-            $(this).addClass("pinned-active");
-            $("body").addClass("body-pinned");
-            if (!$dropdown.hasClass("show")) $dropdown.stop(true, true).show().addClass("show");
+        $dropdown.addClass("pinned");
+        $(this).addClass("pinned-active");
+        $("body").addClass("body-pinned");
+        $menuItemWrapper.removeClass('wrapper--active'); 
+        if (!$dropdown.hasClass("show")) {
+            $dropdown.stop(true, true).show().addClass("show");
         }
-        $('.menu-item-wrapper').removeClass('wrapper--active');
-    });
-
+    }
+});
     $(window).on("click", (event) => {
         if (!$(event.target).closest(".menu-item-wrapper, .search-box-wrapper, .icon-wrapper, .avatar, .dropdown-pin-icon, .main-search-dropdown, .sidebar-dropdown, .history-dropdown, .favorites-dropdown, .notification-dropdown, .profile-dropdown, .search-options-dropdown").length) {
             closeAllNonPinnedDropdowns();

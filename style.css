@@ -134,8 +134,8 @@ body {
 
 .search-options-dropdown {
   position: absolute;
-  top: 42px;
-  right: 65px;
+  top: 24px;
+  right: -310px;
   width: 286px;
   height: 230px;
   background-color: white;
@@ -1015,8 +1015,8 @@ box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
 
 .search-options-dropdown {
   position: absolute;
-  top: 42px;
-  right:-25px;
+  top: 24px;
+  right: -310px;
   width: 286px;
   height: 230px;
   background-color: white;
