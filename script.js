@@ -66,21 +66,12 @@ $(document).ready(function() {
         $.each(mainSearchHistory, function(index, item) {
             let displayText = item.term;
             let tooltipText = item.category;
-
-            // ۱. بررسی طول عبارت جستجو شده
             if (item.term.length > 30) {
-                // --- دستور دیباگ ---
-                // این پیام باید در کنسول مرورگر شما نمایش داده شود
                 console.log("آیتم طولانی پیدا شد و در حال کوتاه شدن است:", item.term);
-                // --- پایان دستور دیباگ ---
+                displayText = item.term.substring(0, 25) + "...";
 
-                // اگر طولانی بود، متن نمایش را کوتاه کن
-                displayText = item.term.substring(0, 20) + "...";
-                // و محتوای تولتیپ را به فرمت جدید بساز
                 tooltipText = `${item.term} (${item.category})`;
             }
-
-            // ۲. ساخت لینک با مقادیر جدید
             const $historyLink = $("<a>").attr("href", "#")
                                         .addClass('history-search-item')
                                         .text(displayText)
@@ -165,27 +156,38 @@ function setActiveItem(text, href) {
 }
 
     function toggleFavorite(text, href) {
-        const itemString = JSON.stringify([text, href]);
-        if (favoriteItems.has(itemString)) {
-            favoriteItems.delete(itemString);
-        } else {
-            favoriteItems.add(itemString);
-        }
-        localStorage.setItem('favoriteItems', JSON.stringify(Array.from(favoriteItems)));
-        
-        const isFavorited = favoriteItems.has(itemString);
-        $(".sidebar-item-wrapper").each(function() {
-            const $link = $(this).find("a");
-            const linkText = $link.attr('title') || $link.text(); // از متن کامل برای مقایسه استفاده کن
-            if (linkText === text && $link.attr("href") === href) {
-                $(this).find(".favorite-star").toggleClass("favorited fas", isFavorited).toggleClass("far", !isFavorited);
-            }
-        });
-        if (($activeItemContainer.data("text") === text) || ($activeItemContainer.data("text") === text.substring(0, 30) + "...")) {
-            $activeItemStar.toggleClass("favorited fas", isFavorited).toggleClass("far", !isFavorited);
-        }
-        updateFavoritesDropdown();
+    // 'text' ورودی همیشه متن کامل است
+    const itemString = JSON.stringify([text, href]);
+
+    if (favoriteItems.has(itemString)) {
+        favoriteItems.delete(itemString);
+    } else {
+        favoriteItems.add(itemString);
     }
+    localStorage.setItem('favoriteItems', JSON.stringify(Array.from(favoriteItems)));
+    
+    const isFavorited = favoriteItems.has(itemString);
+
+    // ۱. به‌روزرسانی ستاره‌ها در منوی اصلی "همه"
+    $("#sidebarDropdown .sidebar-item-wrapper").each(function() {
+        const $link = $(this).find("a");
+        // متن کامل را از دیتا اتریبیوت یا خود لینک می‌خوانیم
+        const linkFullText = $link.attr('data-tooltip-text') || $link.text().trim();
+        
+        // مقایسه با متن کامل آیتم انجام می‌شود
+        if (linkFullText === text && $link.attr("href") === href) {
+            $(this).find(".favorite-star").toggleClass("favorited fas", isFavorited).toggleClass("far", !isFavorited);
+        }
+    });
+
+    // ۲. به‌روزرسانی ستاره در بیضی هدر
+    if ($activeItemContainer.data("text") === text) {
+        $activeItemStar.toggleClass("favorited fas", isFavorited).toggleClass("far", !isFavorited);
+    }
+
+    // ۳. به‌روزرسانی دراپ‌دان علاقه‌مندی‌ها
+    updateFavoritesDropdown();
+}
 
     function updateFavoritesDropdown() {
         const $favoritesContent = $("#favorites-content");
@@ -321,17 +323,24 @@ function setActiveItem(text, href) {
 
     initializeApp();
     
-    // ... (بقیه کدها بدون تغییر باقی می‌مانند) ...
-    function toggleDropdown($dropdown, $wrapper = null) {
-        if ($wrapper && $dropdown.hasClass("pinned")) return;
-        const isCurrentlyOpen = $dropdown.hasClass("show");
-        closeAllNonPinnedDropdowns($dropdown.attr("id"));
-        $('.menu-item-wrapper').removeClass('wrapper--active'); 
-        if (!isCurrentlyOpen) {
-            $dropdown.stop(true, true).show("blind", { direction: "vertical" }, 100).addClass("show");
-            if ($wrapper && !$dropdown.hasClass('pinned')) $wrapper.addClass("wrapper--active"); 
+   function toggleDropdown($dropdown, $wrapper = null) {
+    if ($wrapper && $dropdown.hasClass("pinned")) {
+        return;
+    }
+    const isCurrentlyOpen = $dropdown.hasClass("show");
+    closeAllNonPinnedDropdowns();
+    if (isCurrentlyOpen) {
+        if ($wrapper) {
+            $wrapper.removeClass("wrapper--active");
+        }
+    } else {
+
+        $dropdown.stop(true, true).show("blind", { direction: "vertical" }, 100).addClass("show");
+        if ($wrapper) {
+            $wrapper.addClass("wrapper--active");
         }
     }
+}
 
     $mainSearchInput.on('focus', function() {
         closeAllNonPinnedDropdowns('mainSearchDropdown');
