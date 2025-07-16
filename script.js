@@ -58,15 +58,34 @@ $(document).ready(function() {
     localStorage.setItem('mainSearchHistory', JSON.stringify(mainSearchHistory));
 }
 
-    function displayMainSearchHistory() {
+   function displayMainSearchHistory() {
     $mainSearchDropdown.empty().show("blind", { direction: "vertical" }, 100).addClass('show');
     if (mainSearchHistory.length > 0) {
         $mainSearchDropdown.append('<div class="search-history-header">جستجوهای اخیر</div>');
+        
         $.each(mainSearchHistory, function(index, item) {
+            let displayText = item.term;
+            let tooltipText = item.category;
+
+            // ۱. بررسی طول عبارت جستجو شده
+            if (item.term.length > 30) {
+                // --- دستور دیباگ ---
+                // این پیام باید در کنسول مرورگر شما نمایش داده شود
+                console.log("آیتم طولانی پیدا شد و در حال کوتاه شدن است:", item.term);
+                // --- پایان دستور دیباگ ---
+
+                // اگر طولانی بود، متن نمایش را کوتاه کن
+                displayText = item.term.substring(0, 20) + "...";
+                // و محتوای تولتیپ را به فرمت جدید بساز
+                tooltipText = `${item.term} (${item.category})`;
+            }
+
+            // ۲. ساخت لینک با مقادیر جدید
             const $historyLink = $("<a>").attr("href", "#")
                                         .addClass('history-search-item')
-                                        .text(item.term)
-                                        .attr('title', item.category); 
+                                        .text(displayText)
+                                        .attr('title', tooltipText);
+
             const $removeIcon = $("<i>").addClass("fas fa-times remove-history-icon").data('term', item.term);
             $historyLink.append($removeIcon);
             $mainSearchDropdown.append($historyLink);
