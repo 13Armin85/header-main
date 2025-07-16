@@ -243,7 +243,7 @@ body {
   font-weight: 100;
   font-size: 14px;
   cursor: pointer;
-  padding: 8px 4px;
+  padding: 5px 4px;
   position: relative;
   transition: background-color 0.2s;
   border-radius: 4px;
@@ -255,16 +255,24 @@ body {
 }
 
 .accordion-header::before {
-  content: "<";
+  content: ""; 
+  background-image: url('./images/arrow.svg'); 
+  background-size: contain; 
+  background-repeat: no-repeat; 
+  display: inline-block; 
+  width: 10px;
+  height:10px;
   position: absolute;
   left: 285px;
+  top: 13px;
   transition: transform 0.2s;
 }
 
 .accordion-header.active::before {
-  transform: rotate(90deg);
+  transform: rotate(-90deg);
   position: absolute;
-  left: 286px;
+  left: 290px;
+
 }
 
 .accordion-body {
@@ -277,7 +285,7 @@ body {
 
 .accordion-body a {
   display: block;
-  padding: 8px 5px;
+  padding: 4px 5px;
   color: #ffffff;
   text-decoration: none;
   font-size: 14px;
@@ -1141,7 +1149,7 @@ box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
   font-weight: 100;
   font-size: 14px;
   cursor: pointer;
-  padding: 8px 4px;
+  padding: 5px 4px;
   position: relative;
   transition: background-color 0.2s;
   border-radius: 4px;
@@ -1150,13 +1158,6 @@ box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
 
 .accordion-header:hover {
   color: rgb(224, 224, 224);
-}
-
-.accordion-header::before {
-  content: ">";
-  position: absolute;
-  left: 285px;
-  transition: transform 0.2s;
 }
 
 
@@ -1170,7 +1171,7 @@ box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
 
 .accordion-body a {
   display: block;
-  padding: 8px 5px;
+  padding: 4px 5px;
   color: #ffffff;
   text-decoration: none;
   font-size: 14px;
@@ -2097,4 +2098,7 @@ body.body-pinned{
         opacity: 1;
         transform: translateY(0); 
     }
+}
+.ui-tooltip-custom.tooltip--menu {
+  transform: translateX(955px);
 }

@@ -13,6 +13,20 @@ $(document).ready(function() {
 
     // --- توابع اصلی برنامه ---
 
+    // <--- مرحله ۱: ایجاد تابع کمکی برای کوتاه کردن متن و افزودن تولتیپ --->
+    function truncateAndTooltipify(selector) {
+        $(selector).each(function() {
+            const $link = $(this);
+            const fullText = $link.text().trim();
+
+            if (fullText.length > 50) {
+                const truncatedText = fullText.substring(0, 30) + "...";
+                $link.text(truncatedText); // متن کوتاه شده را نمایش بده
+                $link.attr('title', fullText); // متن کامل را برای تولتیپ در title ذخیره کن
+            }
+        });
+    }
+
     function closeAllNonPinnedDropdowns(excludeId = null) {
         $(".sidebar-dropdown, .history-dropdown, .favorites-dropdown, .notification-dropdown, .profile-dropdown, .search-options-dropdown, .main-search-dropdown").each(function() {
             const $dropdown = $(this);
@@ -34,9 +48,8 @@ $(document).ready(function() {
 
    function updateMainSearchHistory(term, category) {
     if (!term || !category) return;
-    // تبدیل تاریخچه به آبجکت‌هایی شامل عبارت و دسته‌بندی
-    mainSearchHistory = mainSearchHistory.filter(item => item.term !== term); // جلوگیری از تکرار عبارت
-    mainSearchHistory.unshift({ term: term, category: category }); // افزودن آبجکت جدید
+    mainSearchHistory = mainSearchHistory.filter(item => item.term !== term); 
+    mainSearchHistory.unshift({ term: term, category: category }); 
     if (mainSearchHistory.length > 5) mainSearchHistory.pop();
     localStorage.setItem('mainSearchHistory', JSON.stringify(mainSearchHistory));
 }
@@ -46,12 +59,10 @@ $(document).ready(function() {
     if (mainSearchHistory.length > 0) {
         $mainSearchDropdown.append('<div class="search-history-header">جستجوهای اخیر</div>');
         $.each(mainSearchHistory, function(index, item) {
-            // افزودن دسته‌بندی به عنوان title attribute برای تولتیپ
             const $historyLink = $("<a>").attr("href", "#")
                                         .addClass('history-search-item')
                                         .text(item.term)
-                                        .attr('title', item.category); // <-- تغییر کلیدی اینجاست
-
+                                        .attr('title', item.category); 
             const $removeIcon = $("<i>").addClass("fas fa-times remove-history-icon").data('term', item.term);
             $historyLink.append($removeIcon);
             $mainSearchDropdown.append($historyLink);
@@ -61,17 +72,15 @@ $(document).ready(function() {
     }
 }
 
-   function executeMainSearch(term) {
+    function executeMainSearch(term) {
     if (!term) return;
-    
-    // گرفتن نام دسته‌بندی انتخاب شده
     const selectedCategory = $("#searchOptionsDropdown a.selected").text().trim();
     updateMainSearchHistory(term, selectedCategory); 
-
     $mainSearchDropdown.empty().show().addClass('show');
     const results = [];
     $("#sidebarDropdown .sidebar-item-wrapper a").each(function() {
-        if ($(this).text().toLowerCase().includes(term.toLowerCase())) {
+        const fullText = $(this).attr('title') || $(this).text(); // برای جستجو از متن کامل استفاده کن
+        if (fullText.toLowerCase().includes(term.toLowerCase())) {
             results.push({ text: $(this).text(), href: $(this).attr('href') });
         }
     });
@@ -112,6 +121,8 @@ $(document).ready(function() {
                 });
                 $historyContent.append($link);
             });
+            // <--- مرحله ۲: فراخوانی تابع برای آیتم‌های تاریخچه --->
+            truncateAndTooltipify("#history-content a");
         }
     }
 
@@ -134,11 +145,12 @@ $(document).ready(function() {
         const isFavorited = favoriteItems.has(itemString);
         $(".sidebar-item-wrapper").each(function() {
             const $link = $(this).find("a");
-            if ($link.text() === text && $link.attr("href") === href) {
+            const linkText = $link.attr('title') || $link.text(); // از متن کامل برای مقایسه استفاده کن
+            if (linkText === text && $link.attr("href") === href) {
                 $(this).find(".favorite-star").toggleClass("favorited fas", isFavorited).toggleClass("far", !isFavorited);
             }
         });
-        if ($activeItemContainer.data("text") === text) {
+        if (($activeItemContainer.data("text") === text) || ($activeItemContainer.data("text") === text.substring(0, 30) + "...")) {
             $activeItemStar.toggleClass("favorited fas", isFavorited).toggleClass("far", !isFavorited);
         }
         updateFavoritesDropdown();
@@ -172,6 +184,8 @@ $(document).ready(function() {
                 $itemDiv.append($link, $removeIcon);
                 $favoritesContent.append($itemDiv);
             });
+            // <--- مرحله ۲: فراخوانی تابع برای آیتم‌های علاقه‌مندی --->
+            truncateAndTooltipify("#favorites-content a");
         }
     }
 
@@ -180,7 +194,8 @@ $(document).ready(function() {
             const $group = $(this);
             let groupHasVisibleItems = false;
             $group.find(".sidebar-item-wrapper").each(function() {
-                const isMatch = $(this).find("a").text().toLowerCase().includes(searchTerm);
+                const fullText = $(this).find('a').attr('title') || $(this).find('a').text(); // جستجو بر اساس متن کامل
+                const isMatch = fullText.toLowerCase().includes(searchTerm);
                 $(this).toggle(isMatch);
                 if (isMatch) groupHasVisibleItems = true;
             });
@@ -237,6 +252,9 @@ $(document).ready(function() {
             $link.wrap($wrapper).parent().append($starIcon);
         });
 
+        // <--- مرحله ۲: فراخوانی تابع برای آیتم‌های منوی "همه" --->
+        truncateAndTooltipify("#sidebarDropdown .sidebar-item-wrapper a");
+
         $activeItemStar.on("click", () => {
             const { text, href } = $activeItemContainer.data();
             if (text && href) toggleFavorite(text, href);
@@ -250,7 +268,6 @@ $(document).ready(function() {
         updateHistoryDropdown();
         initializeSearchOptions(); 
         
-
         setupClearIcon(".search-box-wrapper");
         setupClearIcon("#sidebarDropdown");
         setupClearIcon("#favoritesDropdown");
@@ -258,19 +275,19 @@ $(document).ready(function() {
     }
 
     initializeApp();
-
-    function toggleDropdown($dropdown, $wrapper = null) {
-    if ($wrapper && $dropdown.hasClass("pinned")) return;
-    const isCurrentlyOpen = $dropdown.hasClass("show");
-    closeAllNonPinnedDropdowns($dropdown.attr("id"));
-    $('.menu-item-wrapper').removeClass('wrapper--active'); 
-    if (!isCurrentlyOpen) {
-        $dropdown.stop(true, true).show("blind", { direction: "vertical" }, 100).addClass("show");
-        if ($wrapper && !$dropdown.hasClass('pinned')) $wrapper.addClass("wrapper--active"); 
-    }
-}
-    // --- بخش مدیریت رویدادها ---
     
+    // ... (بقیه کدها بدون تغییر باقی می‌مانند) ...
+    function toggleDropdown($dropdown, $wrapper = null) {
+        if ($wrapper && $dropdown.hasClass("pinned")) return;
+        const isCurrentlyOpen = $dropdown.hasClass("show");
+        closeAllNonPinnedDropdowns($dropdown.attr("id"));
+        $('.menu-item-wrapper').removeClass('wrapper--active'); 
+        if (!isCurrentlyOpen) {
+            $dropdown.stop(true, true).show("blind", { direction: "vertical" }, 100).addClass("show");
+            if ($wrapper && !$dropdown.hasClass('pinned')) $wrapper.addClass("wrapper--active"); 
+        }
+    }
+
     $mainSearchInput.on('focus', function() {
         closeAllNonPinnedDropdowns('mainSearchDropdown');
         const term = $(this).val().trim();
@@ -297,67 +314,53 @@ $(document).ready(function() {
         }, 150);
     });
 
-
-
-$mainSearchDropdown.on('mousedown', function(e) {
-    const $target = $(e.target);
-
-    if ($target.hasClass('view-results-button') || $target.hasClass('remove-history-icon')) {
-        e.preventDefault();
-    }
-
-    if ($target.hasClass('view-results-button')) {
-        const results = $target.data('results');
-        $mainSearchDropdown.empty();
-        $mainSearchDropdown.append('<div class="search-results-header">نتایج جستجو</div>');
-        $.each(results, function(index, result) {
-            const $resultLink = $("<a>").attr("href", result.href).addClass('result-item').text(result.text);
-            $mainSearchDropdown.append($resultLink);
-        });
-    } else if ($target.hasClass('remove-history-icon')) {
-        e.stopPropagation();
-        const termToRemove = $target.data('term');
-        mainSearchHistory = mainSearchHistory.filter(item => item.term !== termToRemove);
-        localStorage.setItem('mainSearchHistory', JSON.stringify(mainSearchHistory));
-        displayMainSearchHistory();
-    } 
-
-    else if ($target.hasClass('history-search-item')) {
-        e.preventDefault();
-
-        const clickedTerm = $target.clone().children().remove().end().text();
-        const historyItem = mainSearchHistory.find(item => item.term === clickedTerm);
-
-        if (historyItem) {
-            $mainSearchInput.val(historyItem.term).focus();
-
-            $("#searchOptionsDropdown a").removeClass("selected");
-            $("#searchOptionsDropdown a").filter(function() {
-                return $(this).text().trim() === historyItem.category;
-            }).addClass("selected");
-
-
-            executeMainSearch(historyItem.term);
+    $mainSearchDropdown.on('mousedown', function(e) {
+        const $target = $(e.target);
+        if ($target.hasClass('view-results-button') || $target.hasClass('remove-history-icon')) {
+            e.preventDefault();
         }
-    } 
-
-    else if ($target.hasClass('result-item')) {
-        e.preventDefault();
-        setActiveItem($target.text(), $target.attr('href'));
-        addToHistory($target.text(), $target.attr('href'));
-        closeAllNonPinnedDropdowns();
-    }
-});
+        if ($target.hasClass('view-results-button')) {
+            const results = $target.data('results');
+            $mainSearchDropdown.empty();
+            $mainSearchDropdown.append('<div class="search-results-header">نتایج جستجو</div>');
+            $.each(results, function(index, result) {
+                const $resultLink = $("<a>").attr("href", result.href).addClass('result-item').text(result.text);
+                $mainSearchDropdown.append($resultLink);
+            });
+        } else if ($target.hasClass('remove-history-icon')) {
+            e.stopPropagation();
+            const termToRemove = $target.data('term');
+            mainSearchHistory = mainSearchHistory.filter(item => item.term !== termToRemove);
+            localStorage.setItem('mainSearchHistory', JSON.stringify(mainSearchHistory));
+            displayMainSearchHistory();
+        } else if ($target.hasClass('history-search-item')) {
+            e.preventDefault();
+            const clickedTerm = $target.clone().children().remove().end().text();
+            const historyItem = mainSearchHistory.find(item => item.term === clickedTerm);
+            if (historyItem) {
+                $mainSearchInput.val(historyItem.term).focus();
+                $("#searchOptionsDropdown a").removeClass("selected");
+                $("#searchOptionsDropdown a").filter(function() {
+                    return $(this).text().trim() === historyItem.category;
+                }).addClass("selected");
+                executeMainSearch(historyItem.term);
+            }
+        } else if ($target.hasClass('result-item')) {
+            e.preventDefault();
+            const fullText = $(this).attr('title') || $(this).text();
+            setActiveItem(fullText, $target.attr('href'));
+            addToHistory(fullText, $target.attr('href'));
+            closeAllNonPinnedDropdowns();
+        }
+    });
 
     $('#all-menu-wrapper').on('click', (e) => { if (!$(e.target).closest('#sidebarDropdown').length) toggleDropdown($("#sidebarDropdown"), $("#all-menu-wrapper")); });
-    
     $('#favorites-menu-wrapper').on('click', (e) => { 
         if (!$(e.target).closest('#favoritesDropdown').length) {
             updateFavoritesDropdown();
             toggleDropdown($("#favoritesDropdown"), $("#favorites-menu-wrapper")); 
         }
     });
-    
     $('#history-menu-wrapper').on('click', (e) => { 
         if (!$(e.target).closest('#historyDropdown').length) {
             updateHistoryDropdown();
@@ -369,79 +372,71 @@ $mainSearchDropdown.on('mousedown', function(e) {
     $('#notification-wrapper .icon').on('click', (e) => { e.stopPropagation(); toggleDropdown($("#notificationDropdown")); });
     $('.avatar').on('click', (e) => { e.stopPropagation(); toggleDropdown($("#profileDropdown")); });
 
-$(".dropdown-pin-icon").on("click", function(event) {
-    event.stopPropagation();
-    const $dropdown = $(this).closest(".sidebar-dropdown, .history-dropdown, .favorites-dropdown");
-    if (!$dropdown.length) return;
-
-    const dropdownId = $dropdown.attr("id");
-    const isCurrentlyPinned = $dropdown.hasClass("pinned");
-    const $menuItemWrapper = $dropdown.closest('.menu-item-wrapper');
-
- 
-
-    if (isCurrentlyPinned) {
-        closeAllNonPinnedDropdowns(dropdownId);
-        $dropdown.removeClass("pinned");
-        $(this).removeClass("pinned-active");
-        $("body").removeClass("body-pinned");
-        $menuItemWrapper.addClass('wrapper--active'); 
-
-    } else {
-
-        const $previousPinned = $(".pinned");
-        if ($previousPinned.length) {
-            $previousPinned.hide().removeClass('show');
-
-             $previousPinned.closest('.menu-item-wrapper').removeClass('wrapper--active');
+    $(".dropdown-pin-icon").on("click", function(event) {
+        event.stopPropagation();
+        const $dropdown = $(this).closest(".sidebar-dropdown, .history-dropdown, .favorites-dropdown");
+        if (!$dropdown.length) return;
+        const dropdownId = $dropdown.attr("id");
+        const isCurrentlyPinned = $dropdown.hasClass("pinned");
+        const $menuItemWrapper = $dropdown.closest('.menu-item-wrapper');
+        if (isCurrentlyPinned) {
+            closeAllNonPinnedDropdowns(dropdownId);
+            $dropdown.removeClass("pinned");
+            $(this).removeClass("pinned-active");
+            $("body").removeClass("body-pinned");
+            $menuItemWrapper.addClass('wrapper--active'); 
+        } else {
+            const $previousPinned = $(".pinned");
+            if ($previousPinned.length) {
+                $previousPinned.hide().removeClass('show');
+                $previousPinned.closest('.menu-item-wrapper').removeClass('wrapper--active');
+            }
+            $(".sidebar-dropdown, .history-dropdown, .favorites-dropdown").removeClass("pinned");
+            $(".dropdown-pin-icon").removeClass("pinned-active");
+            $dropdown.addClass("pinned");
+            $(this).addClass("pinned-active");
+            $("body").addClass("body-pinned");
+            $menuItemWrapper.removeClass('wrapper--active'); 
+            if (!$dropdown.hasClass("show")) {
+                $dropdown.stop(true, true).show().addClass("show");
+            }
         }
-        $(".sidebar-dropdown, .history-dropdown, .favorites-dropdown").removeClass("pinned");
-        $(".dropdown-pin-icon").removeClass("pinned-active");
-        $dropdown.addClass("pinned");
-        $(this).addClass("pinned-active");
-        $("body").addClass("body-pinned");
-        $menuItemWrapper.removeClass('wrapper--active'); 
+        $('.menu-item-wrapper').not($menuItemWrapper).removeClass('wrapper--active');
+    });
 
-        if (!$dropdown.hasClass("show")) {
-            $dropdown.stop(true, true).show().addClass("show");
-        }
-    }
-    $('.menu-item-wrapper').not($menuItemWrapper).removeClass('wrapper--active');
-});
     $(window).on("click", (event) => {
         if (!$(event.target).closest(".menu-item-wrapper, .search-box-wrapper, .icon-wrapper, .avatar, .dropdown-pin-icon, .main-search-dropdown, .sidebar-dropdown, .history-dropdown, .favorites-dropdown, .notification-dropdown, .profile-dropdown, .search-options-dropdown").length) {
             closeAllNonPinnedDropdowns();
         }
     });
 });
-$("#mainSearchDropdown").tooltip({
-    items: ".history-search-item[title]",
+
+$("#mainSearchDropdown, #sidebarDropdown, #favoritesDropdown, #historyDropdown").tooltip({
+    items: "a[title]", 
     classes: {
         "ui-tooltip": "ui-tooltip-custom"
     },
     show: {
         delay: 400
     },
-    hide: false, 
-    track: false,
-
-
     position: {
-
         my: "center top",
-        at: "center bottom+5", 
-        
+        at: "center bottom+5", // موقعیت برای همه یکی است
+    },
+    // این رویداد هنگام باز شدن تولتیپ اجرا می‌شود
+    open: function(event, ui) {
+        // 'this' به دکمه‌ای اشاره دارد که تولتیپ را فعال کرده
+        const triggerId = $(this).attr('id');
+        const menuIds = ['sidebarDropdown', 'favoritesDropdown', 'historyDropdown'];
 
-        using: function(position, feedback) {
-            $(this).css({
-                top: position.top, 
-                left: position.left, 
-                position: 'absolute'
-            });
+        // ابتدا کلاس‌های اضافی را پاک می‌کنیم
+        ui.tooltip.removeClass('tooltip--menu');
+
+        // اگر تولتیپ متعلق به یکی از منوها بود، کلاس مخصوص را اضافه کن
+        if (menuIds.includes(triggerId)) {
+            ui.tooltip.addClass('tooltip--menu');
         }
     },
-
-
     content: function() {
         return $(this).attr('title');
     }
