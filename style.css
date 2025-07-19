@@ -266,7 +266,7 @@ input{
   width: 10px;
   height:10px;
   position: absolute;
-  left: 259px;
+  right: 15px;
   top: 13px;
   transition: transform 0.2s;
 }
@@ -1019,7 +1019,7 @@ box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
 .search-category-button {
   display: flex;
   align-items: center;
-  padding: 0 12px;
+  padding: 0 9px;
   cursor: pointer;
   height: 100%;
   color: #ddd;
