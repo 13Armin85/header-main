@@ -246,7 +246,7 @@ input{
   font-weight: 100;
   font-size: 14px;
   cursor: pointer;
-  padding: 5px 4px;
+  padding: 5px 30px;
   position: relative;
   transition: background-color 0.2s;
   border-radius: 4px;
@@ -266,7 +266,7 @@ input{
   width: 10px;
   height:10px;
   position: absolute;
-  left: 285px;
+  left: 259px;
   top: 13px;
   transition: transform 0.2s;
 }
@@ -274,13 +274,13 @@ input{
 .accordion-header.active::before {
   transform: rotate(-90deg);
   position: absolute;
-  left: 290px;
+  left: 258px;
 
 }
 
 .accordion-body {
   display: none;
-  padding-right: 15px;
+  padding-right: 0px;
   margin-top: 6px;
   overflow: hidden;
   border-right: 1px solid white;
@@ -1152,11 +1152,11 @@ box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
   font-weight: 100;
   font-size: 14px;
   cursor: pointer;
-  padding: 5px 4px;
+  padding: 5px 30px;
   position: relative;
   transition: background-color 0.2s;
   border-radius: 4px;
-  margin-right: 12px;
+  margin-right: -2px;
 }
 
 .accordion-header:hover {
