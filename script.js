@@ -1,14 +1,13 @@
-
 $(document).ready(function() {
     const initialFavorites = JSON.parse(localStorage.getItem('favoriteItems')) || [];
     const favoriteItems = new Set(initialFavorites);
     let historyItems = JSON.parse(localStorage.getItem('historyItems')) || [];
     let mainSearchHistory = JSON.parse(localStorage.getItem('mainSearchHistory')) || [];
-    const $activeItemContainer = $("#active-item-container"); 
+    const $activeItemContainer = $("#active-item-container");
     const $activeItemText = $("#active-item-text");
-    const $activeItemStar = $("#active-item-star"); 
-    const $mainSearchInput = $(".search-input"); 
-    const $mainSearchDropdown = $("#mainSearchDropdown"); 
+    const $activeItemStar = $("#active-item-star");
+    const $mainSearchInput = $(".search-input");
+    const $mainSearchDropdown = $("#mainSearchDropdown");
 
     /**
      * منو را از فایل data.json بارگذاری می‌کند.
@@ -38,12 +37,12 @@ $(document).ready(function() {
         }
     }
 
-   /**
-    * به صورت بازگشتی (Recursive) منو را از روی داده‌های JSON می‌سازد و به صفحه اضافه می‌کند.
-    * این تابع ساختار آکاردئونی تو در تو را به درستی ایجاد می‌کند.
-    * @param {Array} items - آرایه‌ای از آیتم‌های منو (یا زیرمنو)
-    * @param {jQuery} parentElement - عنصری که آیتم‌های جدید باید به آن اضافه شوند
-    */
+    /**
+     * به صورت بازگشتی (Recursive) منو را از روی داده‌های JSON می‌سازد و به صفحه اضافه می‌کند.
+     * این تابع ساختار آکاردئونی تو در تو را به درستی ایجاد می‌کند.
+     * @param {Array} items - آرایه‌ای از آیتم‌های منو (یا زیرمنو)
+     * @param {jQuery} parentElement - عنصری که آیتم‌های جدید باید به آن اضافه شوند
+     */
     function renderMenu(items, parentElement) {
         $.each(items, function(i, item) {
             if (item.sub_menu && item.sub_menu.length > 0) {
@@ -57,22 +56,28 @@ $(document).ready(function() {
                     $accordionGroup.append($accordionHeader).append($accordionBody);
                     parentElement.append($accordionGroup);
                 }
-            }
-            else {
+            } else {
                 const $link = $('<a>')
-                    .attr('href', `#/${item.id}`) 
+                    .attr('href', `#/${item.id}`)
                     .attr('data-id', item.id)
                     .text(item.title);
                 parentElement.append($link);
             }
         });
     }
-    function truncateAndTooltipify(selector) {
+    
+    /**
+     * متن‌های طولانی را کوتاه کرده و برای آن‌ها تولتیپ ایجاد می‌کند.
+     * @param {string} selector - سلکتور jQuery برای انتخاب عناصر
+     * @param {number} limit - حداکثر طول مجاز متن قبل از کوتاه شدن
+     */
+    function truncateAndTooltipify(selector, limit) {
         $(selector).each(function() {
             const $link = $(this);
             const fullText = $link.attr('data-full-text') || $link.text().trim();
-            if (fullText.length > 35) {
-                const truncatedText = fullText.substring(0, 35) + "...";
+
+            if (fullText.length > limit) {
+                const truncatedText = fullText.substring(0, limit) + "...";
                 $link.text(truncatedText);
                 $link.attr('data-tooltip-text', fullText);
                 $link.removeAttr('title');
@@ -83,6 +88,7 @@ $(document).ready(function() {
             }
         });
     }
+
 
     function closeAllNonPinnedDropdowns(excludeId = null) {
         $(".sidebar-dropdown, .history-dropdown, .favorites-dropdown, .notification-dropdown, .profile-dropdown, .search-options-dropdown, .main-search-dropdown").each(function() {
@@ -147,11 +153,19 @@ $(document).ready(function() {
         }
     }
 
-
-    function executeMainSearch(term) {
+    /**
+     * جستجوی اصلی را انجام می‌دهد.
+     * @param {string} term - عبارت مورد جستجو
+     * @param {boolean} saveToHistory - آیا نتیجه در تاریخچه ذخیره شود یا خیر
+     */
+    function executeMainSearch(term, saveToHistory = false) {
         if (!term) return;
-        const selectedCategory = $("#searchOptionsDropdown a.selected").text().trim();
-        updateMainSearchHistory(term, selectedCategory);
+
+        if (saveToHistory) {
+            const selectedCategory = $("#searchOptionsDropdown a.selected").text().trim();
+            updateMainSearchHistory(term, selectedCategory);
+        }
+
         $mainSearchDropdown.empty().show().addClass('show');
         const results = [];
         $("#sidebarDropdown .sidebar-item-wrapper a").each(function() {
@@ -341,6 +355,83 @@ $(document).ready(function() {
         const regex = new RegExp(escapeRegExp(searchTerm), 'gi');
         return fullText.replace(regex, `<span class="highlight">$&</span>`);
     }
+    /**
+     * کلیک روی تب‌های داخل دراپ‌دان نوتیفیکیشن را مدیریت می‌کند.
+     */
+    function handleNotificationTabClick() {
+        const $tabs = $(".notification-tabs button");
+        const $content = $(".notification-dropdown-content");
+
+        $tabs.on("click", function() {
+            const $this = $(this);
+            $tabs.removeClass("active");
+            $this.addClass("active");
+
+            // حذف پیام خالی احتمالی قبلی
+            $content.find('.empty-state-container').remove();
+
+            if ($this.text() === "خوانده‌نشده") {
+                const $unreadItems = $content.find("a .notification-item.unread");
+                // همه آیتم‌ها را مخفی کن
+                $content.find("a").hide();
+
+                if ($unreadItems.length === 0) {
+                    // اگر آیتم خوانده‌نشده‌ای نبود، پیام را نمایش بده
+                    const emptyHTML = createEmptyStateHTML("هیچ پیام خوانده نشده ای ندارید.");
+                    $content.append(emptyHTML);
+                } else {
+                    // در غیر این صورت، آیتم‌های خوانده‌نشده را نمایش بده
+                    $unreadItems.parent("a").show();
+                }
+            } else { // اگر روی تب "همه" کلیک شد
+                // همه آیتم‌ها را نمایش بده
+                $content.find("a").show();
+            }
+        });
+    }
+    /**
+ * تمام رویدادهای مربوط به سیستم نوتیفیکیشن را فعال می‌کند.
+ */
+function initializeNotificationSystem() {
+    const $tabs = $(".notification-tabs button");
+    const $content = $(".notification-dropdown-content");
+    const $markAllAsReadLink = $(".notification-dropdown-header a");
+
+    // رویداد کلیک برای تب‌های "همه" و "خوانده‌نشده"
+    $tabs.on("click", function() {
+        const $this = $(this);
+        $tabs.removeClass("active");
+        $this.addClass("active");
+
+        $content.find('.empty-state-container').remove();
+
+        if ($this.text() === "خوانده‌نشده") {
+            const $unreadItems = $content.find("a .notification-item.unread");
+            $content.find("a").hide();
+
+            if ($unreadItems.length === 0) {
+                const emptyHTML = createEmptyStateHTML("هیچ پیام خوانده نشده ای ندارید.");
+                $content.append(emptyHTML);
+            } else {
+                $unreadItems.parent("a").show();
+            }
+        } else {
+            $content.find("a").show();
+        }
+    });
+
+    // رویداد کلیک برای "علامت‌گذاری همه به عنوان خوانده شده"
+    $markAllAsReadLink.on("click", function(e) {
+        e.preventDefault(); // جلوگیری از رفرش صفحه
+
+        // حذف کلاس unread از همه آیتم‌ها
+        $content.find(".notification-item.unread").removeClass("unread");
+
+        // شبیه‌سازی کلیک روی تب فعال برای رفرش کردن ویو
+        // این کار باعث می‌شود اگر کاربر در تب "خوانده‌نشده" باشد، پیام خالی نمایش داده شود
+        $('.notification-tabs button.active').trigger('click');
+    });
+}
 
     function filterSidebar(searchTerm) {
         const term = searchTerm.toLowerCase();
@@ -349,10 +440,10 @@ $(document).ready(function() {
             let groupHasVisibleItems = false;
             // هایلایت کردن هدرهای اصلی
             const headerText = $group.find('.accordion-header').first().text();
-            if(term){
-                 $group.find('.accordion-header').first().html(highlightText(headerText, term));
+            if (term) {
+                $group.find('.accordion-header').first().html(highlightText(headerText, term));
             } else {
-                 $group.find('.accordion-header').first().text(headerText);
+                $group.find('.accordion-header').first().text(headerText);
             }
 
             $group.find(".sidebar-item-wrapper").each(function() {
@@ -364,7 +455,7 @@ $(document).ready(function() {
                     if (term) {
                         $link.html(highlightText(fullText, term));
                     } else {
-                        truncateAndTooltipify($link);
+                        truncateAndTooltipify($link, 28);
                     }
                     $wrapper.show();
                     groupHasVisibleItems = true;
@@ -373,7 +464,7 @@ $(document).ready(function() {
                 }
             });
 
-            if(term && headerText.toLowerCase().includes(term)){
+            if (term && headerText.toLowerCase().includes(term)) {
                 groupHasVisibleItems = true;
             }
             $group.toggle(groupHasVisibleItems);
@@ -455,8 +546,8 @@ $(document).ready(function() {
             $link.wrap($wrapper).parent().append($starIcon);
         });
 
-        // ۳. کوتاه کردن متن‌های طولانی
-        truncateAndTooltipify("#sidebarDropdown .sidebar-item-wrapper a");
+        // ۳. کوتاه کردن متن‌های طولانی فقط برای منوی "همه" با حد 28 کاراکتر
+        truncateAndTooltipify("#sidebarDropdown .sidebar-item-wrapper a", 28);
 
         // ۴. اتصال سایر رویدادهای برنامه
         $activeItemStar.on("click", () => {
@@ -481,7 +572,7 @@ $(document).ready(function() {
         setupClearIcon("#favoritesDropdown");
         setupClearIcon("#historyDropdown");
 
-         // ۶. تنظیمات پلاگین تولتیپ jQuery UI
+        // ۶. تنظیمات پلاگین تولتیپ jQuery UI
         $("#sidebarDropdown, #favoritesDropdown, #historyDropdown").tooltip({
             items: "a[data-tooltip-text]",
             classes: { "ui-tooltip": "ui-tooltip-custom" },
@@ -521,15 +612,17 @@ $(document).ready(function() {
                 return $(this).attr('title');
             }
         });
+        handleNotificationTabClick(); 
+        initializeNotificationSystem();
     }
     async function main() {
         const menuData = await loadMenuData();
         const $sidebarContainer = $("#sidebarDropdown");
         $sidebarContainer.find('.accordion-group').remove();
         renderMenu(menuData.menu, $sidebarContainer);
-        
 
         initializeApp();
+        
     }
     main();
 
@@ -561,7 +654,7 @@ $(document).ready(function() {
         if (!term) {
             displayMainSearchHistory();
         } else {
-            executeMainSearch(term);
+            executeMainSearch(term, false);
         }
     });
 
@@ -569,7 +662,7 @@ $(document).ready(function() {
         if (e.key === 'Enter') {
             e.preventDefault();
             const term = $(this).val().trim();
-            if (term) executeMainSearch(term);
+            if (term) executeMainSearch(term, true);
         }
     });
 
@@ -577,7 +670,7 @@ $(document).ready(function() {
     $mainSearchInput.on('input', function() {
         const term = $(this).val().trim();
         if (term) {
-            executeMainSearch(term);
+            executeMainSearch(term, false);
         } else {
             displayMainSearchHistory();
         }
@@ -617,7 +710,7 @@ $(document).ready(function() {
                 $("#searchOptionsDropdown a").filter(function() {
                     return $(this).text().trim() === historyItem.category;
                 }).addClass("selected");
-                executeMainSearch(historyItem.term);
+                executeMainSearch(historyItem.term, true);
             }
         } else if ($target.hasClass('result-item')) {
             e.preventDefault();
@@ -666,11 +759,11 @@ $(document).ready(function() {
         const isCurrentlyPinned = $dropdown.hasClass("pinned");
         const $menuItemWrapper = $dropdown.closest('.menu-item-wrapper');
         if (isCurrentlyPinned) {
-        closeAllNonPinnedDropdowns(dropdownId);
-        $dropdown.removeClass("pinned");
-        $(this).removeClass("pinned-active");
-        $("body").removeClass("body-pinned");
-        $menuItemWrapper.addClass('wrapper--active');
+            closeAllNonPinnedDropdowns(dropdownId);
+            $dropdown.removeClass("pinned");
+            $(this).removeClass("pinned-active");
+            $("body").removeClass("body-pinned");
+            $menuItemWrapper.addClass('wrapper--active');
         } else {
             const $previousPinned = $(".pinned");
             if ($previousPinned.length) {
