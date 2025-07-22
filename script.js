@@ -271,16 +271,29 @@ $(document).ready(function() {
 
     function toggleFavorite(text, href) {
         const itemString = JSON.stringify([text, href]);
+        let currentFavorites = JSON.parse(localStorage.getItem('favoriteItems')) || [];
 
-        if (favoriteItems.has(itemString)) {
-            favoriteItems.delete(itemString);
+        // بررسی کنید که آیا آیتم از قبل وجود دارد یا خیر
+        const existingIndex = currentFavorites.findIndex(item => item === itemString);
+
+        if (existingIndex > -1) {
+            // اگر وجود داشت، آن را حذف کنید
+            currentFavorites.splice(existingIndex, 1);
         } else {
-            favoriteItems.add(itemString);
+            // اگر وجود نداشت، آن را به ابتدای لیست اضافه کنید
+            currentFavorites.unshift(itemString);
         }
-        localStorage.setItem('favoriteItems', JSON.stringify(Array.from(favoriteItems)));
+
+        // مجموعه (Set) را برای بررسی‌های سریع به‌روز کنید
+        favoriteItems.clear();
+        currentFavorites.forEach(item => favoriteItems.add(item));
+
+        // لیست جدید را در localStorage ذخیره کنید
+        localStorage.setItem('favoriteItems', JSON.stringify(currentFavorites));
 
         const isFavorited = favoriteItems.has(itemString);
 
+        // به‌روزرسانی ستاره در منوی "همه"
         $("#sidebarDropdown .sidebar-item-wrapper").each(function() {
             const $link = $(this).find("a");
             const linkFullText = $link.attr('data-full-text') || $link.text().trim();
@@ -289,9 +302,12 @@ $(document).ready(function() {
             }
         });
 
+        // به‌روزرسانی ستاره در آیتم فعال
         if ($activeItemContainer.data("text") === text) {
             $activeItemStar.toggleClass("favorited fas", isFavorited).toggleClass("far", !isFavorited);
         }
+        
+        // به‌روزرسانی دراپ‌دان علاقه‌مندی‌ها
         updateFavoritesDropdown();
     }
 
